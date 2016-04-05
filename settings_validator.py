@@ -185,11 +185,11 @@ class SettingsViewListener(sublime_plugin.EventListener):
                         append = ''
                         if 'type' in rule:
                             if rule['type'] == 'str':
-                                append = '"$1"'
+                                append = '"$0"'
                             elif rule['type'] == 'list':
-                                append = '[$1]'
+                                append = '[$0]'
                             else:
-                                append = '$1'
+                                append = '$0'
                         
                         append = '": ' + append + ',\n'
                         completions += [(key + '\tKey', key + append) for key in keys]
