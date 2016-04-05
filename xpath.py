@@ -8,6 +8,7 @@ from .lxml_parser import *
 from .sublime_lxml import *
 from .sublime_input_quickpanel import QuickPanelFromInputCommand
 import traceback
+from .settings_validator import ValidatedSettings
 
 change_counters = {}
 xml_roots = {}
@@ -134,15 +135,14 @@ class GotoXmlParseErrorCommand(sublime_plugin.TextCommand):
         return containsSGML(self.view)
 
 def getXPathOfNodes(nodes, args):
-    include_indexes = not getBoolValueFromArgsOrSettings('show_hierarchy_only', args, False)
-    unique = getBoolValueFromArgsOrSettings('copy_unique_path_only', args, True)
-    include_attributes = include_indexes or getBoolValueFromArgsOrSettings('show_attributes_in_hierarchy', args, False)
-    show_namespace_prefixes_from_query = getBoolValueFromArgsOrSettings('show_namespace_prefixes_from_query', args, False)
-    case_sensitive = getBoolValueFromArgsOrSettings('case_sensitive', args, True)
-    all_attributes = getBoolValueFromArgsOrSettings('show_all_attributes', args, False)
-    
     global settings
-    wanted_attributes = settings.get('attributes_to_include', [])
+    include_indexes = not settings.get_from_args_then_settings('show_hierarchy_only', args)
+    unique = settings.get_from_args_then_settings('copy_unique_path_only', args)
+    include_attributes = include_indexes or settings.get_from_args_then_settings('show_attributes_in_hierarchy', args)
+    show_namespace_prefixes_from_query = settings.get_from_args_then_settings('show_namespace_prefixes_from_query', args)
+    case_sensitive = settings.get_from_args_then_settings('case_sensitive', args)
+    all_attributes = settings.get_from_args_then_settings('show_all_attributes', args)
+    wanted_attributes = settings.get('attributes_to_include')
     if not case_sensitive:
         wanted_attributes = [attrib.lower() for attrib in wanted_attributes]
     
@@ -251,7 +251,8 @@ def updateStatusToCurrentXPathIfSGML(view):
     """Update the status bar with the relevant xpath at the first cursor."""
     status = None
     if isCursorInsideSGML(view):
-        if not getBoolValueFromArgsOrSettings('only_show_xpath_if_saved', None, False) or not view.is_dirty() or view.is_read_only():
+        global settings
+        if not settings.get('only_show_xpath_if_saved') or not view.is_dirty() or view.is_read_only():
             trees = ensureTreeCacheIsCurrent(view)
             if trees is None: # don't hide parse errors by overwriting status
                 return
@@ -360,7 +361,7 @@ class GotoRelativeCommand(sublime_plugin.TextCommand):
                     message += ' for at least one selection'
                 sublime.status_message(message)
             else:
-                goto_element = settings.get('goto_element', 'open')
+                goto_element = settings.get('goto_element')
                 if goto_element == 'none':
                     goto_element = 'open'
                 if 'goto_element' in kwargs:
@@ -385,14 +386,6 @@ class GotoRelativeCommand(sublime_plugin.TextCommand):
         
         return 'Goto ' + args['direction'] + ' ' + descr
 
-def getBoolValueFromArgsOrSettings(key, args, default):
-    """Retrieve the value for the given key from the args if present, otherwise the settings if present, otherwise use the supplied default."""
-    if args is None or not key in args:
-        global settings
-        return bool(settings.get(key, default))
-    else:
-        return args[key]
-
 def getUniqueItems(items):
     """Return the items without any duplicates, preserving order."""
     unique = []
@@ -409,7 +402,8 @@ class XpathListener(sublime_plugin.EventListener):
         updateStatusToCurrentXPathIfSGML(view)
     
     def on_post_save_async(self, view):
-        if getBoolValueFromArgsOrSettings('only_show_xpath_if_saved', None, False):
+        global settings
+        if settings.get('only_show_xpath_if_saved'):
             updateStatusToCurrentXPathIfSGML(view)
     
     def on_pre_close(self, view):
@@ -423,9 +417,6 @@ class XpathListener(sublime_plugin.EventListener):
         previous_first_selection.pop(view.id(), None)
         
         if view.file_name() is None: # if the file has no filename associated with it
-            #if not getBoolValueFromArgsOrSettings('global_query_history', None, True): # if global history isn't enabled
-            #    remove_key_from_xpath_query_history(get_history_key_for_view(view))
-            #else:
             change_key_for_xpath_query_history(get_history_key_for_view(view), 'global')
 
 def register_xpath_extensions():
@@ -501,10 +492,11 @@ def register_xpath_extensions():
 def plugin_loaded():
     """When the plugin is loaded, clear all variables and cache xpaths for current view if applicable."""
     global settings
-    settings = sublime.load_settings('xpath.sublime-settings')
+    settings = ValidatedSettings.load('xpath.sublime-settings')
     settings.clear_on_change('reparse')
     settings.add_on_change('reparse', settingsChanged)
     sublime.set_timeout_async(settingsChanged, 10)
+    settings.validate_all()
     
     register_xpath_extensions()
 
@@ -512,7 +504,7 @@ def get_results_for_xpath_query_multiple_trees(query, tree_contexts, root_namesp
     """Given a query string and a dictionary of document trees and their context elements, compile the xpath query and execute it for each document."""
     matches = []
     global settings
-    variables = settings.get('variables', {})
+    variables = settings.get('variables')
     for key in additional_variables:
         variables[key] = additional_variables[key]
     
@@ -559,7 +551,7 @@ def add_to_xpath_query_history_for_key(key, query):
     
     # if there are more than the specified maximum number of history items, remove the excess
     global settings
-    max_history = settings.get('max_query_history', 100)
+    max_history = settings.get('max_query_history')
     history = history[-max_history:]
     
     history_settings.set('history', history)
@@ -589,7 +581,8 @@ class ShowXpathQueryHistoryCommand(sublime_plugin.TextCommand):
     history = None
     
     def run(self, edit, **args):
-        global_history = getBoolValueFromArgsOrSettings('global_query_history', args, True)
+        global settings
+        global_history = settings.get_from_args_then_settings('global_query_history', args)
         
         keys = None
         if not global_history:
@@ -607,7 +600,7 @@ class ShowXpathQueryHistoryCommand(sublime_plugin.TextCommand):
             sublime.active_window().active_view().run_command('query_xpath', { 'prefill_path_at_cursor': False, 'prefill_query': self.history[selected_index] })
     
     def history_selection_changed(self, selected_index):
-        if not getBoolValueFromArgsOrSettings('live_mode', None, True):
+        if not settings.get('live_mode'):
             self.history_selection_done(selected_index)
     
     def is_enabled(self, **args):
@@ -633,7 +626,7 @@ def namespace_map_for_tree(tree):
     root = tree.getroot()
     if not hasattr(root, 'unique_namespaces'):
         global settings
-        defaultNamespacePrefix = settings.get('default_namespace_prefix', 'default')
+        defaultNamespacePrefix = settings.get('default_namespace_prefix')
         root.unique_namespaces = unique_namespace_prefixes(root.all_namespaces, defaultNamespacePrefix)
     return root.unique_namespaces
 
@@ -643,8 +636,8 @@ class SelectResultsFromXpathQueryCommand(sublime_plugin.TextCommand): # example 
         nodes = get_results_for_xpath_query_multiple_trees(kwargs['xpath'], contexts, namespace_map_from_contexts(contexts))
         
         global settings
-        goto_element = settings.get('goto_element', 'open')
-        goto_attribute = settings.get('goto_attribute', 'value')
+        goto_element = settings.get('goto_element')
+        goto_attribute = settings.get('goto_attribute')
         if goto_element == 'none':
             goto_element = 'open'
         if goto_attribute == 'none':
@@ -664,7 +657,8 @@ class SelectResultsFromXpathQueryCommand(sublime_plugin.TextCommand): # example 
 
 class RerunLastXpathQueryAndSelectResultsCommand(sublime_plugin.TextCommand): # example usage from python console: sublime.active_window().active_view().run_command('rerun_last_xpath_query_and_select_results', { 'global_query_history': False })
     def run(self, edit, **args):
-        global_history = getBoolValueFromArgsOrSettings('global_query_history', args, True)
+        global settings
+        global_history = settings.get_from_args_then_settings('global_query_history', args)
         
         keys = [get_history_key_for_view(self.view)]
         if global_history:
@@ -793,9 +787,10 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         super().run(edit, **args)
     
     def parse_args(self):
+        global settings
         self.arguments['initial_value'] = self.get_value_from_args('prefill_query', self.previous_input)
         if self.arguments['initial_value'] is None:
-            global_history = getBoolValueFromArgsOrSettings('global_query_history', self.arguments, True)
+            global_history = settings.get_from_args_then_settings('global_query_history', self.arguments)
             keys = [get_history_key_for_view(self.view)]
             if global_history:
                 keys = None
@@ -804,7 +799,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
             if len(history) > 0:
                 self.arguments['initial_value'] = history[-1]
         # if previous input is blank, or specifically told to, use path of first cursor. even if live mode enabled, cursor won't move much when activating this command
-        if getBoolValueFromArgsOrSettings('prefill_path_at_cursor', self.arguments, False) or not self.arguments['initial_value']:
+        if settings.get_from_args_then_settings('prefill_path_at_cursor', self.arguments) or not self.arguments['initial_value']:
             global previous_first_selection
             prev = previous_first_selection.get(self.view.id(), None)
             if prev is not None:
@@ -814,22 +809,21 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         self.arguments['label'] = 'enter xpath'
         self.arguments['syntax'] = 'xpath.sublime-syntax'
         
-        global settings
-        self.max_results_to_show = int(self.get_value_from_args('max_results_to_show', settings.get('max_results_to_show', 1000)))
+        self.max_results_to_show = self.get_value_from_args('max_results_to_show', settings.get('max_results_to_show'))
         
-        self.arguments['async'] = getBoolValueFromArgsOrSettings('live_query_async', self.arguments, True)
-        self.arguments['delay'] = int(settings.get('live_query_delay', 0))
-        self.arguments['live_mode'] = getBoolValueFromArgsOrSettings('live_mode', self.arguments, True)
+        self.arguments['async'] = settings.get_from_args_then_settings('live_query_async', self.arguments)
+        self.arguments['delay'] = settings.get_from_args_then_settings('live_query_delay', self.arguments)
+        self.arguments['live_mode'] = settings.get_from_args_then_settings('live_mode', self.arguments)
         
-        self.arguments['normalize_whitespace_in_preview'] = getBoolValueFromArgsOrSettings('normalize_whitespace_in_preview', self.arguments, False)
-        self.arguments['auto_completion_triggers'] = settings.get('auto_completion_triggers', '/')
-        self.arguments['intelligent_auto_complete'] = getBoolValueFromArgsOrSettings('intelligent_auto_complete', self.arguments, True)
+        self.arguments['normalize_whitespace_in_preview'] = settings.get_from_args_then_settings('normalize_whitespace_in_preview', self.arguments)
+        self.arguments['auto_completion_triggers'] = settings.get('auto_completion_triggers')
+        self.arguments['intelligent_auto_complete'] = settings.get_from_args_then_settings('intelligent_auto_complete', self.arguments)
         
         
         if 'goto_element' not in self.arguments:
-            self.arguments['goto_element'] = settings.get('goto_element', 'open')
+            self.arguments['goto_element'] = settings.get('goto_element')
         if 'goto_attribute' not in self.arguments:
-            self.arguments['goto_attribute'] = settings.get('goto_attribute', 'value')
+            self.arguments['goto_attribute'] = settings.get('goto_attribute')
         
         super().parse_args()
     
@@ -922,7 +916,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         flags = sublime.INHIBIT_WORD_COMPLETIONS
         if not self.arguments['intelligent_auto_complete']:
             flags = 0
-        return (completions_for_xpath_query(self.input_panel, prefix, locations, self.contexts[1], self.contexts[2], settings.get('variables', {}), self.arguments['intelligent_auto_complete']), flags)
+        return (completions_for_xpath_query(self.input_panel, prefix, locations, self.contexts[1], self.contexts[2], settings.get('variables'), self.arguments['intelligent_auto_complete']), flags)
     
     def on_completion_committed(self):
         # show the auto complete popup again if the item that was autocompleted ended in a character that is an auto completion trigger

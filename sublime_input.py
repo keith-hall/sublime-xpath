@@ -69,9 +69,10 @@ class RequestInputCommand(sublime_plugin.TextCommand): # this command should be 
             if not self.timeout_active:
                 self.timeout_active = True
                 if self.get_value_from_args('async', True):
-                    sublime.set_timeout_async(lambda: self.compare_to_previous(), use_delay)
+                    timeout = sublime.set_timeout_async
                 else:
-                    sublime.set_timeout(lambda: self.compare_to_previous(), use_delay)
+                    timeout = sublime.set_timeout
+                timeout(lambda: self.compare_to_previous(), use_delay)
     
     def input_panel_closed(self):
         if self.input_panel is not None:

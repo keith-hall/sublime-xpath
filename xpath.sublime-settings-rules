@@ -1,0 +1,21 @@
+[
+	{ "key": "goto_element",
+	  "allowed_values": ["open", "close", "names", "open_attributes", "content", "entire"]
+	},
+	{ "key": "goto_attribute",
+	  "allowed_values": ["name", "value", "entire"]
+	},
+	{ "keys": ["intelligent_auto_complete", "normalize_whitespace_in_preview", "global_query_history", "prefill_path_at_cursor", "only_show_xpath_if_saved", "show_namespace_prefixes_from_query", "live_mode", "copy_unique_path_only", "show_attributes_in_hierarchy", "show_hierarchy_only", "case_sensitive", "show_all_attributes", "live_query_async"],
+	  //"allowed_values": [true, false]
+	  "type": "bool"
+	},
+	{ "keys": ["max_query_history", "max_results_to_show", "live_query_delay"],
+	  "type": "int"
+	},
+	{ "key": "attributes_to_include",
+	  "type": "list"
+	},
+	{ "keys": ["auto_completion_triggers", "default_namespace_prefix"],
+	  "type": "str"
+	}
+]

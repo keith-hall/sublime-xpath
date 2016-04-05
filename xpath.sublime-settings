@@ -41,5 +41,9 @@
 	// when an element is selected via an XPath query, what aspect of it should the cursor move to? possible values: open, close, names, open_attributes, content, entire
 	"goto_element": "open",
 	// when an attribute is selected via an XPath query, what aspect of it should the cursor move to? possible values: name, value, entire
-	"goto_attribute": "value"
+	"goto_attribute": "value",
+	// variables that can be referenced from the XPath query with $variable_name. Variables can be integers or strings.
+	"variables": {},
+	"live_query_async": false,
+	"live_query_delay": 0
 }
