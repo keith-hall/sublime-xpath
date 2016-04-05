@@ -154,6 +154,9 @@ class SettingsViewListener(sublime_plugin.EventListener):
     
     def get_related_settings(self, view):
         view_file_name = view.file_name()
+        if view_file_name is None:
+            return None
+        view_file_name = view_file_name.replace('/', os.path.sep)
         for base_file_name in ValidatedSettings.registered_settings:
             if view_file_name.endswith(base_file_name):
                 return ValidatedSettings.registered_settings[base_file_name]
@@ -164,7 +167,8 @@ class SettingsViewListener(sublime_plugin.EventListener):
         settings = self.get_related_settings(view)
         if settings:
             act = view.settings().get('auto_complete_triggers', list())
-            act.append({ 'selector': 'source.json meta.structure.dictionary.json punctuation.definition.string.begin.json - meta.structure.dictionary.value.json ', 'characters': '"' })
+            act.append({ 'selector': 'source.json meta.structure.dictionary.json - ' + SettingsViewListener.value_selector, 'characters': '"' })
+            print(act)
             view.settings().set('auto_complete_triggers', act)
             
             if view.size() == 0:
