@@ -168,7 +168,6 @@ class SettingsViewListener(sublime_plugin.EventListener):
         if settings:
             act = view.settings().get('auto_complete_triggers', list())
             act.append({ 'selector': 'source.json meta.structure.dictionary.json - ' + SettingsViewListener.value_selector, 'characters': '"' })
-            print(act)
             view.settings().set('auto_complete_triggers', act)
             
             if view.size() == 0:
