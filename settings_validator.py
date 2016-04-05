@@ -1,4 +1,5 @@
 import sublime
+import sublime_plugin
 import os
 from uuid import uuid4 as guid
 
@@ -134,3 +135,81 @@ class ValidatedSettings:
         if 'allowed_values' in rule:
             if not value in rule['allowed_values']:
                 raise ValueError('"' + key + '" has value: ' + repr(value) + ' but should be one of: ' + repr(rule['allowed_values']))
+
+
+class SettingsViewListener(sublime_plugin.EventListener):
+    key_selector = 'string.quoted.double.json'
+    value_selector = 'meta.structure.dictionary.value.json'
+    
+    def get_related_settings(self, view):
+        view_file_name = view.file_name()
+        for base_file_name in ValidatedSettings.registered_settings:
+            if view_file_name.endswith(base_file_name):
+                return ValidatedSettings.registered_settings[base_file_name]
+        return None
+    
+    def on_load_async(self, view):
+        """When a ValidatedSettings file is loaded, register the necessary autocomplete triggers."""
+        settings = self.get_related_settings(view)
+        if settings:
+            act = view.settings().get('auto_complete_triggers', list())
+            act.append({ 'selector': 'source.json meta.structure.dictionary.json punctuation.definition.string.begin.json - meta.structure.dictionary.value.json ', 'characters': '"' })
+            view.settings().set('auto_complete_triggers', act)
+            
+            if view.size() == 0:
+                view.run_command('insert', { 'characters': '{\n"' })
+                view.run_command('auto_complete')
+    
+    def on_query_completions(self, view, prefix, locations):
+        settings = self.get_related_settings(view)
+        if settings and view.match_selector(0, 'source.json'):
+            if len(locations) == 1:
+                pos = locations[0]
+                key_selector = SettingsViewListener.key_selector
+                value_selector = SettingsViewListener.value_selector
+                if view.match_selector(pos, key_selector + ' - ' + value_selector): # keys
+                    completions = list()
+                    for rule in settings.get_rules():
+                        keys = ValidatedSettings.get_keys_for_rule(rule)
+                        append = ''
+                        if 'type' in rule:
+                            if rule['type'] == 'str':
+                                append = '"$1"'
+                            elif rule['type'] == 'list':
+                                append = '[$1]'
+                            else:
+                                append = '$1'
+                        
+                        append = '": ' + append + ',\n'
+                        completions += [(key + '\tKey', key + append) for key in keys]
+                    return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
+                elif view.match_selector(pos, value_selector):
+                    # get the relevant key
+                    pos -= 1
+                    while not view.match_selector(pos, key_selector + ' punctuation.definition.string.end.json'):
+                        pos -= 1
+                    end_pos = pos
+                    while not view.match_selector(pos, key_selector + ' punctuation.definition.string.begin.json'):
+                        pos -= 1
+                    start_pos = pos + 1
+                    key = view.substr(sublime.Region(start_pos, end_pos))
+                    
+                    completions = list()
+                    for rule in settings.get_rules():
+                        if key in ValidatedSettings.get_keys_for_rule(rule):
+                            if 'allowed_values' in rule:
+                                completions += [(value + '\t' + key, value) for value in rule['allowed_values']]
+                            elif 'type' in rule:
+                                if rule['type'] == 'bool':
+                                    completions += [('true\tBoolean', 'true'), ('false\tBoolean', 'false')]
+                    
+                    return (completions, sublime.INHIBIT_WORD_COMPLETIONS)
+        else:
+            return None
+    
+    def on_post_text_command(self, view, command_name, args):
+        settings = self.get_related_settings(view)
+        if settings:
+            if command_name in ('commit_completion', 'insert_best_completion'):
+                if view.match_selector(view.sel()[0].begin(), SettingsViewListener.value_selector):
+                    view.run_command('auto_complete')
