@@ -67,7 +67,14 @@ class ValidatedSettings:
     def set(self, name, value):
         """Sets the named setting if it is valid. Only primitive types, lists, and dictionaries are accepted."""
         self.validate_key_value_pair(name, value)
+        old_value = None
+        try:
+            old_value = self.get(name)
+        except:
+            pass
         self.base.set(name, value)
+        if old_value != value:
+            pass # TODO: call any relevant callbacks
     
     def erase(self, name):
         """Removes the named setting. Does not remove it from any parent Settings."""
@@ -84,6 +91,10 @@ class ValidatedSettings:
     def clear_on_change(self, callback_id):
         """Remove all callbacks registered with the given callback_id."""
         self.base.clear_on_change(callback_id)
+    
+    def add_on_specific_change(self, key, on_change):
+        """Register a callback to be run whenever the value for the specific key in this object is changed."""
+        pass # TODO: 
     
     def validate_all(self):
         """Check if all rules pass validation."""
