@@ -811,7 +811,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         
         self.max_results_to_show = self.get_value_from_args('max_results_to_show', settings.get('max_results_to_show'))
         
-        self.arguments['async'] = settings.get_from_args_then_settings('live_query_async', self.arguments)
+        #self.arguments['async'] = settings.get_from_args_then_settings('live_query_async', self.arguments)
         self.arguments['delay'] = settings.get_from_args_then_settings('live_query_delay', self.arguments)
         self.arguments['live_mode'] = settings.get_from_args_then_settings('live_mode', self.arguments)
         

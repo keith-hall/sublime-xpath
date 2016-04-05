@@ -35,7 +35,7 @@ class ValidatedSettings:
         except ValueError as e:
             print('Error reading settings file "' + self.base_file_name + '": ' + repr(e))
             # get the default value
-            path = sublime.find_resources(self.base_file_name)[0]
+            path = sublime.find_resources(self.base_file_name)[0] # index 0 is always the file shipped with the package. index 1 would be the User file.
             defaults = sublime.decode_value(sublime.load_resource(path))
             value = defaults[name]
             self.validate_key_value_pair(name, value)
@@ -89,8 +89,8 @@ class ValidatedSettings:
         for rule in self.get_rules():
             for key in ValidatedSettings.get_keys_for_rule(rule):
                 value = self.get(key)
-                if value is not None:
-                    ValidatedSettings.validate_rule(rule, key, value)
+                #if value is not None:
+                ValidatedSettings.validate_rule(rule, key, value)
     
     def validate_key_value_pair(self, key, value):
         """Check if the specific key and value pass the validation rules."""
@@ -122,7 +122,12 @@ class ValidatedSettings:
     @staticmethod
     def validate_rule(rule, key, value):
         if 'type' in rule:
-            type_class = __builtins__[rule['type']]
+            type_class = None
+            try:
+                type_class = __builtins__[rule['type']]
+            except KeyError:
+                raise ValueError('rule for key "' + key + '" mentions type "' + rule['type'] + '" but this is not a built in Python type.')
+                return
             if not isinstance(value, type_class):
                 raise ValueError('"' + key + '" has type "' + type(value).__name__ + '" but should be "' + rule['type'] + '"')
         
