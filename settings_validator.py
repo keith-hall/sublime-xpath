@@ -236,4 +236,5 @@ class SettingsViewListener(sublime_plugin.EventListener):
     def on_modified_async(self, view):
         settings = self.get_related_settings(view)
         if settings:
+            if self.previous_command.get(view.id(), None) == 'auto_complete': # detect when auto_complete was shown and the user clicked on an entry rather than pressing tab - https://forum.sublimetext.com/t/how-to-detect-commands-run-by-a-plugin-when-an-autocomplete-entry-is-clicked-on-by-the-mouse/19073
                 view.run_command('auto_complete')
