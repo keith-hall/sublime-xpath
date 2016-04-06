@@ -1,16 +1,9 @@
 import sublime
 import sublime_plugin
 
-on_query_completions_callbacks = {}
-on_completion_committed_callbacks = {}
-
 class RequestInputCommand(sublime_plugin.TextCommand): # this command should be overidden, and not used directly
-    input_panel = None
-    pending_value = None
-    current_value = None
-    live_mode = None
-    timeout_active = None
-    arguments = None
+    on_query_completions_callbacks = dict()
+    on_completion_committed_callbacks = dict()
     
     def run(self, edit, **args):
         self.input_panel = None
@@ -29,10 +22,8 @@ class RequestInputCommand(sublime_plugin.TextCommand): # this command should be 
             self.input_panel.assign_syntax(syntax)
         self.input_panel.settings().set('gutter', False)
         
-        global on_query_completions_callbacks
-        on_query_completions_callbacks[self.input_panel.id()] = lambda prefix, locations: self.on_query_completions(prefix, locations)
-        global on_completion_committed_callbacks
-        on_completion_committed_callbacks[self.input_panel.id()] = lambda: self.on_completion_committed()
+        RequestInputCommand.on_query_completions_callbacks[self.input_panel.id()] = lambda prefix, locations: self.on_query_completions(prefix, locations)
+        RequestInputCommand.on_completion_committed_callbacks[self.input_panel.id()] = lambda: self.on_completion_committed()
     
     def set_args(self, **args):
         self.arguments = args or {}
@@ -76,10 +67,8 @@ class RequestInputCommand(sublime_plugin.TextCommand): # this command should be 
     
     def input_panel_closed(self):
         if self.input_panel is not None:
-            global on_query_completions_callbacks
-            on_query_completions_callbacks.pop(self.input_panel.id(), None) # remove callback if present
-            global on_completion_committed_callbacks
-            on_completion_committed_callbacks.pop(self.input_panel.id(), None) # remove callback if present
+            RequestInputCommand.on_query_completions_callbacks.pop(self.input_panel.id(), None) # remove callback if present
+            RequestInputCommand.on_completion_committed_callbacks.pop(self.input_panel.id(), None) # remove callback if present
         self.input_panel = None
     
     def input_cancelled(self):
@@ -122,16 +111,14 @@ class RequestInputCommand(sublime_plugin.TextCommand): # this command should be 
 
 class InputCompletionsListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
-        global on_query_completions_callbacks
-        if view.id() in on_query_completions_callbacks.keys():
-            return on_query_completions_callbacks[view.id()](prefix, locations)
+        if view.id() in RequestInputCommand.on_query_completions_callbacks.keys():
+            return RequestInputCommand.on_query_completions_callbacks[view.id()](prefix, locations)
     
     def on_pre_close(self, view):
-        global on_query_completions_callbacks
-        on_query_completions_callbacks.pop(view.id(), None) # remove callback if present
+        RequestInputCommand.on_query_completions_callbacks.pop(view.id(), None) # remove callback if present
+        self.previous_command = None
     
     def on_post_text_command(self, view, command_name, args):
-        global on_completion_committed_callbacks
-        if command_name in ('commit_completion', 'insert_best_completion'):
-            if view.id() in on_completion_committed_callbacks.keys():
-                on_completion_committed_callbacks[view.id()]()
+        if view.id() in RequestInputCommand.on_completion_committed_callbacks.keys():
+            if command_name in ('commit_completion', 'insert_best_completion'):
+                RequestInputCommand.on_completion_committed_callbacks[view.id()]()
