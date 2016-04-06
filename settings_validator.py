@@ -227,3 +227,13 @@ class SettingsViewListener(sublime_plugin.EventListener):
             if command_name in ('commit_completion', 'insert_best_completion'):
                 if view.match_selector(view.sel()[0].begin(), SettingsViewListener.value_selector):
                     view.run_command('auto_complete')
+        self.previous_command[view.id()] = command_name
+    
+    def __init__(self):
+        super().__init__()
+        self.previous_command = dict()
+    
+    def on_modified_async(self, view):
+        settings = self.get_related_settings(view)
+        if settings:
+                view.run_command('auto_complete')
