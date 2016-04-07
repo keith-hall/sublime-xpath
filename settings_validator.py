@@ -167,7 +167,7 @@ class SettingsViewListener(sublime_plugin.EventListener):
         settings = self.get_related_settings(view)
         if settings:
             act = view.settings().get('auto_complete_triggers', list())
-            act.append({ 'selector': 'source.json meta.structure.dictionary.json - ' + SettingsViewListener.value_selector, 'characters': '"' })
+            act.append({ 'selector': 'source.json meta.structure.dictionary.json', 'characters': '"' })
             view.settings().set('auto_complete_triggers', act)
             
             if view.size() == 0:
@@ -177,6 +177,7 @@ class SettingsViewListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         settings = self.get_related_settings(view)
         if settings and view.match_selector(0, 'source.json'):
+            self.previous_command[view.id()] = 'auto_complete'
             if len(locations) == 1:
                 pos = locations[0]
                 key_selector = SettingsViewListener.key_selector
@@ -237,4 +238,4 @@ class SettingsViewListener(sublime_plugin.EventListener):
         settings = self.get_related_settings(view)
         if settings:
             if self.previous_command.get(view.id(), None) == 'auto_complete': # detect when auto_complete was shown and the user clicked on an entry rather than pressing tab - https://forum.sublimetext.com/t/how-to-detect-commands-run-by-a-plugin-when-an-autocomplete-entry-is-clicked-on-by-the-mouse/19073
-                view.run_command('auto_complete')
+                self.on_post_text_command(view, 'commit_completion', None)
