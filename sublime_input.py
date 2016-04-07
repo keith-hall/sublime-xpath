@@ -110,15 +110,25 @@ class RequestInputCommand(sublime_plugin.TextCommand): # this command should be 
     # End of def refreshSelectionBugWorkAround()
 
 class InputCompletionsListener(sublime_plugin.EventListener):
+    def __init__(self):
+        self.previous_command = dict()
+    
     def on_query_completions(self, view, prefix, locations):
         if view.id() in RequestInputCommand.on_query_completions_callbacks.keys():
+            self.previous_command[view.id()] = 'auto_complete'
             return RequestInputCommand.on_query_completions_callbacks[view.id()](prefix, locations)
     
     def on_pre_close(self, view):
         RequestInputCommand.on_query_completions_callbacks.pop(view.id(), None) # remove callback if present
-        self.previous_command = None
+        self.previous_command[view.id()] = None
     
     def on_post_text_command(self, view, command_name, args):
         if view.id() in RequestInputCommand.on_completion_committed_callbacks.keys():
+            self.previous_command[view.id()] = command_name
             if command_name in ('commit_completion', 'insert_best_completion'):
                 RequestInputCommand.on_completion_committed_callbacks[view.id()]()
+    
+    def on_modified_async(self, view):
+        if view.id() in RequestInputCommand.on_completion_committed_callbacks.keys():
+            if self.previous_command.get(view.id(), None) == 'auto_complete': # detect when auto_complete was shown and the user clicked on an entry rather than pressing tab - https://forum.sublimetext.com/t/how-to-detect-commands-run-by-a-plugin-when-an-autocomplete-entry-is-clicked-on-by-the-mouse/19073
+                self.on_post_text_command(view, 'commit_completion', None)
