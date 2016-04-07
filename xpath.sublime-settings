@@ -45,5 +45,7 @@
 	// variables that can be referenced from the XPath query with $variable_name. Variable values can be integers or strings. i.e. { 'hello': 123, 'world': 'some text' }
 	"variables": {},
 	// [live_mode only] how long to wait to buffer input before running the query
-	"live_query_delay": 10
+	"live_query_delay": 10,
+	// whether the "self::" axis should be autocompleted with a * or with the name of the element
+	"autocomplete_self_axis_with_star": false
 }

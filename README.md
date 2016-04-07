@@ -38,6 +38,7 @@ See [default settings](https://github.com/rosshadden/sublime-xpath/blob/master/x
 - `variables` - a dictionary of custom variables, which can be used when writing an XPath query expression.
 - `auto_completion_triggers` - characters that, when typed while entering an XPath expression, will automatically show autocompletions. If empty, autocompletion can still be triggered manually.
 - `intelligent_auto_complete` - whether or not to include intelligent autocompletion suggestions from the document.
+- `autocomplete_self_axis_with_star` - whether or not to include a `*` after the self axis in autocompletion, as opposed to the element name.
 - `goto_element` - when an element is selected via an XPath query, which aspect of it the cursor should move to. Possible values are:
   - `open` - Select the name of the element in the open tag.
   - `close` - Select the name of the element in the close tag.

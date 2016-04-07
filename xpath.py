@@ -916,7 +916,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         flags = sublime.INHIBIT_WORD_COMPLETIONS
         if not self.arguments['intelligent_auto_complete']:
             flags = 0
-        return (completions_for_xpath_query(self.input_panel, prefix, locations, self.contexts[1], self.contexts[2], settings.get('variables'), self.arguments['intelligent_auto_complete']), flags)
+        return (completions_for_xpath_query(self.input_panel, prefix, locations, self.contexts[1], self.contexts[2], settings.get('variables'), self.arguments['intelligent_auto_complete'], settings.get('autocomplete_self_axis_with_star')), flags)
     
     def on_completion_committed(self):
         # show the auto complete popup again if the item that was autocompleted ended in a character that is an auto completion trigger
@@ -934,10 +934,10 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
     def is_visible(self):
         return containsSGML(self.view)
 
-def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, variables, intelligent):
+def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, variables, intelligent, self_with_star):
     def completions_axis_specifiers():
         completions = ['ancestor', 'ancestor-or-self', 'attribute', 'child', 'descendant', 'descendant-or-self', 'following', 'following-sibling', 'namespace', 'parent', 'preceding', 'preceding-sibling', 'self']
-        return [(completion + '\taxis', completion + '::') for completion in completions]
+        return [(completion + '\taxis', completion + '::' + ('*' if completion == 'self' and self_with_star else '')) for completion in completions]
 
     def completions_node_types():
         completions = ['text', 'node', 'comment'] # 'processing-instruction' is also a valid XPath node type, but not parsed into an ElementTree, so useless to show it in suggestions/completions
