@@ -21,7 +21,7 @@
 #                                     ^^ variable.parameter.xpath
  -3.div--(-.2)
 # ^^ query.xml.xpath constant.numeric.xpath
-#   ^^^ query.xml.xpath keyword.operator.xpath
+#   ^^^ query.xml.xpath keyword.operator.word.xpath
 #         ^^^ query.xml.xpath constant.numeric.xpath
 /*[following::(bar)]
 # .^^^^^^^^^^^ constant.language.xpath.axis_name

@@ -64,9 +64,12 @@ contexts: # NOTE: these scope names don't represent what they should, they are s
     - match: '(?=[,\]\)])'
       pop: true
   operator:
-    - match: 'and|or|mod|div|\*|\||\+|-|!?=|<=?|>=?'
-      scope: keyword.operator.xpath # Operator
-      set: base_disallow_pop #_without_pop # show invalid end predicate when an operator is at the end of a predicate for example //*[a or ]
+    - match: 'and|or|mod|div'
+      scope: keyword.operator.word.xpath # Operator https://forum.sublimetext.com/t/dev-build-3110/19214/31
+      set: base_disallow_pop # show invalid end predicate when an operator is at the end of a predicate for example //*[a or ]
+    - match: '\*|\||\+|-|!?=|<=?|>=?'
+      scope: keyword.operator.word.xpath # Operator
+      set: base_disallow_pop # show invalid end predicate when an operator is at the end of a predicate for example //*[a or ]
     - include: pop_me
     - include: unexpected_token
   operator_or_predicate:

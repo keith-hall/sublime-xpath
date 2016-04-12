@@ -11,11 +11,11 @@
 #                                      ^ punctuation.definition.arguments.begin.xpath.subexpression comment
 #                                       ^ meta.function-call.xpath punctuation.definition.arguments.end.xpath.subexpression comment
 #                                        ^ xpath.predicate
-#                                         ^ xpath.predicate keyword.operator.xpath
+#                                         ^ xpath.predicate keyword.operator.
 #                                          ^ xpath.predicate
 #                                           ^ constant.numeric.xpath
 #                                            ^^ xpath.predicate
-#                                              ^^^ xpath.predicate keyword.operator.xpath
+#                                              ^^^ xpath.predicate keyword.operator.word.xpath
 #                                                  ^^^^^^^^^^^^^^^^ xpath.predicate meta.function-call.xpath entity.name.function.xpath
 #                                                                  ^ xpath.predicate meta.function-call.xpath keyword.control.flow.xpath
 #                                                                   ^ xpath.predicate meta.function-call.xpath punctuation.separator.xpath.arguments
@@ -25,7 +25,7 @@
 #                                                                                 ^ xpath.predicate meta.function-call.xpath punctuation.definition.string.end.xpath
 #                                                                                  ^ punctuation.definition.arguments.end.xpath.subexpression comment
 #                                                                                   ^ xpath.predicate
-#                                                                                    ^ xpath.predicate keyword.operator.xpath
+#                                                                                    ^ xpath.predicate keyword.operator.
 #                                                                                     ^ xpath.predicate
 #                                                                                      ^^^^^^^^^^^ xpath.predicate string.quoted.double.xpath
 #                                                                                      ^^^^ xpath.predicate string.quoted.double.xpath - meta.function-call.xpath

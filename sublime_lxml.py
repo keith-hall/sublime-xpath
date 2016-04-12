@@ -278,7 +278,7 @@ def parse_xpath_query_for_completions(view, completion_position):
             node['children'].append({ 'value': '' })
         elif part == ',':
             node['children'].append({ 'separator': part })
-        elif scope is not None and scope.endswith('keyword.operator.xpath '):
+        elif scope is not None and ' keyword.operator.' in (' ' + scope):
             node['children'].append({ 'operator': part })
         else:
             if 'value' not in node['children'][-1]:
