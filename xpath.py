@@ -84,6 +84,10 @@ def buildTreeForViewRegion(view, region_scope):
         line_number_offset = view.rowcol(region_scope.begin())[0]
         text = 'line ' + str(e.position[0] + line_number_offset) + ', column ' + str(e.position[1]) + ' - ' + e.msg # TODO: column is incorrect if there are tabs and the tab width is set > 1
         view.set_status('xpath_error', parse_error + text)
+    except etree.ParserError as e:
+        traceback.print_tb(e.__traceback__)
+        global parse_error
+        view.set_status('xpath_error', parse_error + repr(e))
     
     return (tree, all_elements)
 
