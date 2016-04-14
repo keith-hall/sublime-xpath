@@ -356,4 +356,5 @@ def chunks(start, end, chunk_size): # inspired by http://stackoverflow.com/a/188
 
 def region_chunks(view, region, chunk_size):
     """Return a generator that will split the region into chunks of the specified size."""
-    return (view.substr(sublime.Region(begin, end)) for begin, end in chunks(region.begin(), region.end(), chunk_size))
+    tab = ' ' * view.settings().get('tab_size')
+    return (view.substr(sublime.Region(begin, end)).replace('\t', tab) for begin, end in chunks(region.begin(), region.end(), chunk_size))
