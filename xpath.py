@@ -77,16 +77,15 @@ def buildTreeForViewRegion(view, region_scope):
     stop = lambda: change_count < view.change_count() # stop parsing if the document is modified
     if view.is_read_only():
         stop = None # no need to check for modifications if the view is read only
+    global parse_error
     try:
         tree, all_elements = lxml_etree_parse_xml_string_with_location(region_chunks(view, region_scope, 8096), region_scope.begin(), stop)
     except etree.XMLSyntaxError as e:
-        global parse_error
         line_number_offset = view.rowcol(region_scope.begin())[0]
         text = 'line ' + str(e.position[0] + line_number_offset) + ', column ' + str(e.position[1]) + ' - ' + e.msg
         view.set_status('xpath_error', parse_error + text)
     except etree.ParserError as e:
         traceback.print_tb(e.__traceback__)
-        global parse_error
         view.set_status('xpath_error', parse_error + repr(e))
     
     return (tree, all_elements)
