@@ -152,7 +152,12 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
     
     def create_element(self, tag, attrib=None, nsmap=None):
         LocationAwareElement.TAG = tag
-        return LocationAwareElement(attrib=attrib, nsmap=nsmap)
+        new_element = None
+        try:
+            new_element = LocationAwareElement(attrib=attrib, nsmap=nsmap)
+        except ValueError as e:
+            raise etree.XMLSyntaxError(e.msg, e.code, 0, 0)
+        return new_element
     
     def element_end(self, tag, location=None):
         self._flush()
