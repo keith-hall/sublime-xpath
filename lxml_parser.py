@@ -45,7 +45,7 @@ class LocationAwareComment(etree.CommentBase):
 class LocationAwareXMLParser:
     RE_SPLIT_XML = re.compile('<!\[CDATA\[|\]\]>|[<>]')
     
-    def __init__(self, position_offset = 0, **parser_options):
+    def __init__(self, position_offset = 0, line_number_offset = 0, **parser_options):
         def getLocation(index=None):
             if index is None:
                 index = -3
@@ -62,12 +62,15 @@ class LocationAwareXMLParser:
         
         self._parser = etree.XMLParser(target=Target(), **parser_options)
         self._initial_position_offset = position_offset
+        self._initial_line_number_offset = line_number_offset
         self._reset()
     
     def _reset(self):
         self._position_offset = self._initial_position_offset
         self._remainder = ''
         self._positions = []
+        self._line_number = 1 + self._initial_line_number_offset
+        self._column_number = 1
     
     def feed(self, chunk):
         start_search_at = len(self._remainder)
@@ -87,6 +90,13 @@ class LocationAwareXMLParser:
     
     def _feed(self, text):
         self._parser.feed(bytes(text, 'UTF-8')) # feed as bytes, otherwise doesn't work on OSX, and encoding declarations in the prolog can cause exceptions - http://lxml.de/parsing.html#python-unicode-strings
+        line_count = text.count('\n')
+        if line_count > 0:
+            self._line_number += line_count
+            self._column_number = len(text) - text.rfind('\n')
+        else:
+            self._column_number += len(text)
+        
     
     def close(self):
         self._positions.append((self._position_offset, self._position_offset + len(self._remainder)))
@@ -156,7 +166,7 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
         try:
             new_element = LocationAwareElement(attrib=attrib, nsmap=nsmap)
         except ValueError as e:
-            raise etree.XMLSyntaxError(e.msg, e.code, 0, 0)
+            raise etree.XMLSyntaxError(e.args[0], None, self._line_number, self._column_number)
         return new_element
     
     def element_end(self, tag, location=None):

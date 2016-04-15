@@ -79,7 +79,7 @@ def buildTreeForViewRegion(view, region_scope):
         stop = None # no need to check for modifications if the view is read only
     global parse_error
     try:
-        tree, all_elements = lxml_etree_parse_xml_string_with_location(region_chunks(view, region_scope, 8096), region_scope.begin(), stop)
+        tree, all_elements = lxml_etree_parse_xml_string_with_location(region_chunks(view, region_scope, 8096), region_scope.begin(), 1, stop)
     except etree.XMLSyntaxError as e:
         line_number_offset = view.rowcol(region_scope.begin())[0]
         text = 'line ' + str(e.position[0] + line_number_offset) + ', column ' + str(e.position[1]) + ' - ' + e.msg
