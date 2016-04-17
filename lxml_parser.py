@@ -199,8 +199,8 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
         return (self._most_recent, self._all_namespaces, self._all_elements)
 
 
-def lxml_etree_parse_xml_string_with_location(xml_chunks, position_offset = 0, should_stop = None):
-    target = LocationAwareTreeBuilder(position_offset=position_offset, collect_ids=False, huge_tree=True, remove_blank_text=False)
+def lxml_etree_parse_xml_string_with_location(xml_chunks, position_offset = 0, line_number_offset = 0, should_stop = None):
+    target = LocationAwareTreeBuilder(position_offset=position_offset, line_number_offset=line_number_offset, collect_ids=False, huge_tree=True, remove_blank_text=False)
     
     if should_stop is None or not callable(should_stop):
         should_stop = lambda: False

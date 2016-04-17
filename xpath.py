@@ -81,9 +81,7 @@ def buildTreeForViewRegion(view, region_scope):
     try:
         tree, all_elements = lxml_etree_parse_xml_string_with_location(region_chunks(view, region_scope, 8096), region_scope.begin(), 1, stop)
     except etree.XMLSyntaxError as e:
-        line_number_offset = view.rowcol(region_scope.begin())[0]
-        text = 'line ' + str(e.position[0] + line_number_offset) + ', column ' + str(e.position[1]) + ' - ' + e.msg
-        view.set_status('xpath_error', parse_error + text)
+        view.set_status('xpath_error', parse_error + e.msg)
     except etree.ParserError as e:
         traceback.print_tb(e.__traceback__)
         view.set_status('xpath_error', parse_error + repr(e))
@@ -122,8 +120,9 @@ class GotoXmlParseErrorCommand(sublime_plugin.TextCommand):
         view = self.view
         
         global parse_error
-        detail = view.get_status('xpath_error')[len(parse_error + 'line '):].split(' - ')[0].split(', column ')
-        point = view.text_point(int(detail[0]) - 1, int(detail[1]) - 1)
+        detail = view.get_status('xpath_error')[len(parse_error):]
+        match = re.search('line (\d+), column (\d+)', detail)
+        point = view.text_point(int(match.group(1)) - 1, int(match.group(2)) - 1)
         
         view.sel().clear()
         view.sel().add(point)
