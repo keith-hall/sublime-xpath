@@ -9,6 +9,7 @@ from .sublime_lxml import *
 from .sublime_input_quickpanel import QuickPanelFromInputCommand
 import traceback
 from .settings_validator import ValidatedSettings
+from .sublime_helper import temporary_status_message
 
 change_counters = {}
 xml_roots = {}
@@ -315,7 +316,7 @@ def copyXPathsToClipboard(view, args):
             message = 'xml is not valid, unable to copy xpaths to clipboard'
     else:
         message = 'xpath not copied to clipboard - ensure syntax is set to xml or html'
-    sublime.status_message(message)
+    temporary_status_message(view, message)
 
 class CopyXpathCommand(sublime_plugin.TextCommand): # example usage from python console: sublime.active_window().active_view().run_command('copy_xpath', { 'show_hierarchy_only': True })
     def run(self, edit, **args):
@@ -361,7 +362,7 @@ class GotoRelativeCommand(sublime_plugin.TextCommand):
                 message = kwargs['direction'] + ' node not found'
                 if len(cursors) > 1:
                     message += ' for at least one selection'
-                sublime.status_message(message)
+                temporary_status_message(self.view, message)
             else:
                 goto_element = settings.get('goto_element')
                 if goto_element == 'none':
@@ -592,7 +593,7 @@ class ShowXpathQueryHistoryCommand(sublime_plugin.TextCommand):
         
         self.history = get_xpath_query_history_for_keys(keys)
         if len(self.history) == 0:
-            sublime.status_message('no query history to show')
+            temporary_status_message(self.view, 'no query history to show')
         else:
             self.view.window().show_quick_panel(self.history, self.history_selection_done, 0, len(self.history) - 1, self.history_selection_changed)
     
@@ -651,10 +652,12 @@ class SelectResultsFromXpathQueryCommand(sublime_plugin.TextCommand): # example 
             goto_attribute = kwargs['goto_attribute']
         
         total_selectable_results, total_results = move_cursors_to_nodes(self.view, nodes, goto_element, goto_attribute)
+        message = None
         if total_selectable_results == total_results:
-            sublime.status_message(str(total_results) + ' nodes selected')
+            message = str(total_results) + ' nodes selected'
         else:
-            sublime.status_message(str(total_selectable_results) + ' nodes selected out of ' + str(total_results))
+            message = str(total_selectable_results) + ' nodes selected out of ' + str(total_results)
+        temporary_status_message(self.view, message)
         add_to_xpath_query_history_for_key(get_history_key_for_view(self.view), kwargs['xpath'])
 
 class RerunLastXpathQueryAndSelectResultsCommand(sublime_plugin.TextCommand): # example usage from python console: sublime.active_window().active_view().run_command('rerun_last_xpath_query_and_select_results', { 'global_query_history': False })
@@ -669,7 +672,7 @@ class RerunLastXpathQueryAndSelectResultsCommand(sublime_plugin.TextCommand): # 
         # TODO: preserve original $contexts variable (xpaths of all context nodes) with history, and restore here?
         history = get_xpath_query_history_for_keys(keys)
         if len(history) == 0:
-            sublime.status_message('no previous query to re-run')
+            temporary_status_message(self.view, 'no previous query to re-run')
         else:
             if args is None:
                 args = dict()
@@ -696,7 +699,7 @@ class CleanTagSoupCommand(sublime_plugin.TextCommand):
                     break
             if not found:
                 self.view.erase_status('xpath_clean')
-                sublime.status_message('Unable to find any SGML tag soup regions to fix.')
+                temporary_status_message(self.view, 'Unable to find any SGML tag soup regions to fix.')
                 return
         
         # clean all html regions specified, in reverse order, because otherwise the offsets will change after tidying the region before it! i.e. args['regions'] must be in ascending position order
@@ -707,7 +710,7 @@ class CleanTagSoupCommand(sublime_plugin.TextCommand):
             self.view.replace(edit, region_scope, xml_string)
         
         self.view.erase_status('xpath_clean')
-        sublime.status_message('Tag soup cleaned successfully.')
+        temporary_status_message(self.view, 'Tag soup cleaned successfully.')
     
     def is_enabled(self, **args):
         return isCursorInsideSGML(self.view)
