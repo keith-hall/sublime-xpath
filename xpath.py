@@ -16,7 +16,7 @@ xml_roots = {}
 xml_elements = {}
 previous_first_selection = {}
 settings = None
-parse_error = 'XPath - error parsing XML at '
+parse_error = 'XPath - error parsing XML: '
 html_cleaning_answer = {}
 
 def settingsChanged():
