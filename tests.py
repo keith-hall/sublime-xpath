@@ -12,14 +12,17 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
             xml = sublime.load_resource(sublime.find_resources('example_xml_ns.xml')[0])
             tree, all_elements = lxml_etree_parse_xml_string_with_location(xml)
             
+            def replace_view_contents(view, new_contents):
+                view.erase(edit, sublime.Region(0, view.size()))
+                view.insert(edit, 0, new_contents)
+            
             def sublime_lxml_completion_tests():
                 def test_xpath_completion(xpath, expectation):
                     view = self.view.window().create_output_panel('xpath_test')
                     
                     view.assign_syntax('xpath.sublime-syntax')
                     
-                    view.erase(edit, sublime.Region(0, view.size()))
-                    view.insert(edit, 0, xpath)
+                    replace_view_contents(view, xpath)
                     result = parse_xpath_query_for_completions(view, view.size())
                     
                     assert result == expectation, 'xpath: ' + repr(xpath) + '\nexpected: ' + repr(expectation) + '\nactual: ' + repr(result)
@@ -61,14 +64,27 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 test_xpath_completion('//*[number(text())*2=246]/', ['//*[number(text())*2=246]/'])
                 test_xpath_completion('//*[number(text())*', ['//*', ''])
             
-            def sublime_lxml_goto_node_tests():
+            def create_test_view():
                 self.view.window().run_command('new_file')
                 view = self.view.window().active_view()
                 
-                view.insert(edit, 0, xml)
-                view.set_syntax_file('xml.sublime-syntax')
-                view.set_read_only(True)
+                view.assign_syntax('xml.sublime-syntax')
+                #view.set_read_only(True)
                 view.set_scratch(True) # so we don't get a message asking to save when we close the view
+                
+                return view
+            
+            def assert_expected_cursors_for_view(view, expected_cursors, details):
+                details = details + '\n'
+                for index, actual_cursor in enumerate(view.sel()):
+                    assert len(expected_cursors) > index, details + 'unexpected cursor: ' + repr(actual_cursor)
+                    assert expected_cursors[index] == (actual_cursor.begin(), actual_cursor.end()), details + 'expected: ' + repr(expected_cursors[index]) + '\nactual: ' + repr(actual_cursor)
+                assert len(expected_cursors) == len(view.sel()), details + 'expected cursors missing: ' + repr(expected_cursors[len(view.sel()):])
+            
+            def sublime_lxml_goto_node_tests():
+                view = create_test_view()
+                view.insert(edit, 0, xml)
+                #view.set_line_endings('Windows')
                 
                 # check that going to a text node works
                 # check that going to an element node works
@@ -84,15 +100,13 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 # - value
                 # - entire
                 # - none
+                
                 def assert_expected_cursors(expected_cursors, details):
-                    for index, actual_cursor in enumerate(view.sel()):
-                        assert len(expected_cursors) > index, details + 'unexpected cursor: ' + repr(actual_cursor)
-                        assert expected_cursors[index] == (actual_cursor.begin(), actual_cursor.end()), details + 'expected: ' + repr(expected_cursors[index]) + '\nactual: ' + repr(actual_cursor)
-                    assert len(expected_cursors) == len(view.sel()), details + 'expected cursors missing: ' + repr(expected_cursors[len(view.sel()):])
+                    assert_expected_cursors_for_view(view, expected_cursors, details)
                 
                 def goto_xpath(xpath, element_type, attribute_type, expected_cursors):
                     view.run_command('select_results_from_xpath_query', { 'xpath': xpath, 'goto_element': element_type, 'goto_attribute': attribute_type })
-                    assert_expected_cursors(expected_cursors, 'xpath: "' + xpath + '"\nelement_type: ' + repr(element_type) + '\nattribute_type: ' + repr(attribute_type) + '\n')
+                    assert_expected_cursors(expected_cursors, 'xpath: "' + xpath + '"\nelement_type: ' + repr(element_type) + '\nattribute_type: ' + repr(attribute_type))
                     
                 def xpath_tests():
                     goto_xpath('/test/default1:hello', 'open', None, [(33, 38)])
@@ -133,7 +147,7 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 
                 def goto_relative(direction, element_type, expected_cursors):
                     view.run_command('goto_relative', { 'direction': direction, 'goto_element': element_type })
-                    assert_expected_cursors(expected_cursors, 'direction: "' + direction + '"\n')
+                    assert_expected_cursors(expected_cursors, 'direction: "' + direction + '"')
                 
                 def relative_tests():
                     goto_xpath('/test', 'open', None, [(24, 28)])
@@ -172,8 +186,22 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 view.window().run_command('close')
                 
             
+            def parse_error_tests():
+                view = create_test_view()
+                
+                replace_view_contents(view, '<root>\n\t<1hello />\n</root>')
+                print([cursor for cursor in view.sel()])
+                view.run_command('goto_xml_parse_error') # for some reason, this command isn't moving the cursor atm when called here, despite working when manually executed...
+                print([cursor for cursor in view.sel()])
+                pos = len('<root>\n\t<')
+                assert_expected_cursors_for_view(view, [(pos, pos)], 'element name cannot start with a digit')
+                
+                # close the view we opened for testing
+                view.window().run_command('close')
+            
             sublime_lxml_completion_tests()
             sublime_lxml_goto_node_tests()
+            parse_error_tests()
             
             # TODO: check the results of an xpath query
             #        e.g. `count(//@*)`
