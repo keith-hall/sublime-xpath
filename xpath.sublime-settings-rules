@@ -17,7 +17,7 @@
 	{ "key": "attributes_to_include",
 	  "type": "list"
 	},
-	{ "keys": ["auto_completion_triggers", "default_namespace_prefix"],
+	{ "keys": ["auto_completion_triggers", "default_namespace_prefix", "sgml_selector"],
 	  "type": "str"
 	}
 ]
