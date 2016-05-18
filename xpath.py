@@ -114,6 +114,8 @@ def ensureTreeCacheIsCurrent(view):
                     root = tree.getroot()
                 xml_roots[view.id()].append(root)
                 xml_elements[view.id()].append(all_elements)
+        else:
+            view.set_status('xpath_error', 'XPath: XML over size threshold')
         
         view.erase_status('xpath')
         global previous_first_selection
