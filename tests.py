@@ -187,17 +187,27 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 
             
             def parse_error_tests():
-                view = create_test_view()
+                tests = []
+                tests.append(('<root>\n\t<1hello />\n</root>', len('<root>\n\t<'), None, 'element name cannot start with a digit'))
+                tests.append(('<root>\n\t<hello></nothello>\n</root>', len('<root>\n\t<hello></nothello>'), None, 'close tag does not match start tag'))
+                tests.append(('<root>\n\t<hello>foobar</world>\n</root>', len('<root>\n\t<hello>foobar</world>'), None, 'mismatched tags'))
+                tests.append(('<root>\n\t<hello test= />\n</root>', len('<root>\n\t<hello test= '), None, 'attribute with equals but without value'))
+                tests.append(('<root>\n\t<hello test test2 />\n</root>', len('<root>\n\t<hello test '), None, 'attribute missing equals'))
+                tests.append(('<root>\n\t<hello test=test2 />\n</root>', len('<root>\n\t<hello test='), None, 'attribute missing quotes'))
+                tests.append(('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" />\n</root>', len('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" /'), None, 'invalid tag name')) # reported just before the `>` is parsed
+                tests.append(('<root>\n\t<!-- ', len('<root>\n\t<!-- '), None, 'unterminated comment'))
+                tests.append(('<root>\n</root> text', len('<root>\n</root> '), None, 'unexpected content after root element'))
                 
-                replace_view_contents(view, '<root>\n\t<1hello />\n</root>')
-                print([cursor for cursor in view.sel()])
-                view.run_command('goto_xml_parse_error') # for some reason, this command isn't moving the cursor atm when called here, despite working when manually executed...
-                print([cursor for cursor in view.sel()])
-                pos = len('<root>\n\t<')
-                assert_expected_cursors_for_view(view, [(pos, pos)], 'element name cannot start with a digit')
                 
-                # close the view we opened for testing
-                view.window().run_command('close')
+                for test in tests:
+                    view = create_test_view()
+                    replace_view_contents(view, test[0])
+                    view.run_command('xpath_parse_document')
+                    view.run_command('goto_xml_parse_error')
+                    assert_expected_cursors_for_view(view, [(test[1], test[2] or test[1])], test[3])
+                    
+                    # close the view we opened for testing
+                    view.window().run_command('close')
             
             sublime_lxml_completion_tests()
             sublime_lxml_goto_node_tests()
@@ -211,4 +221,3 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
             print('XPath tests failed')
             print(repr(e))
             traceback.print_tb(e.__traceback__)
-            

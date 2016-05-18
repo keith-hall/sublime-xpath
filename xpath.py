@@ -122,7 +122,7 @@ class GotoXmlParseErrorCommand(sublime_plugin.TextCommand):
         
         global parse_error
         detail = view.get_status('xpath_error')[len(parse_error):]
-        match = re.search('line (\d+), column (\d+)', detail)
+        match = re.search(r'line (\d+), column (\d+)', detail)
         point = view.text_point(int(match.group(1)) - 1, int(match.group(2)) - 1)
         
         view.sel().clear()
@@ -294,6 +294,10 @@ def updateStatusToCurrentXPathIfSGML(view):
         view.erase_status('xpath')
     else:
         view.set_status('xpath', status)
+
+class XpathParseDocumentCommand(sublime_plugin.TextCommand):
+    def run(self, edit, **kwargs):
+        ensureTreeCacheIsCurrent(self.view)
 
 def copyXPathsToClipboard(view, args):
     """Copy the XPath(s) at the cursor(s) to the clipboard."""

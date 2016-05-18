@@ -166,7 +166,7 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
         try:
             new_element = LocationAwareElement(attrib=attrib, nsmap=nsmap)
         except ValueError as e:
-            raise etree.XMLSyntaxError(e.args[0], None, self._line_number, self._column_number)
+            raise etree.XMLSyntaxError(e.args[0] + ' at line ' + str(self._line_number - 1) + ', column ' + str(self._column_number), None, self._line_number, self._column_number)
         return new_element
     
     def element_end(self, tag, location=None):
