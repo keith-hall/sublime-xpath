@@ -101,6 +101,8 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 # - entire
                 # - none
                 
+                # TODO: test comments, including ones that contain < and > characters i.e. commented out XML <!-- <foobar><example /></foobar> -->
+                
                 def assert_expected_cursors(expected_cursors, details):
                     assert_expected_cursors_for_view(view, expected_cursors, details)
                 
