@@ -49,5 +49,7 @@
 	// whether the "self::" axis should be autocompleted with a * or with the name of the element
 	"autocomplete_self_axis_with_star": false,
 	// which scopes to parse, show XPath at cursors for, and allow XPath queries on
-	"sgml_selector": "text.xml, text.html.basic - embedding.php"
+	"sgml_selector": "text.xml, text.html.basic - embedding.php",
+	// files larger than this size (in bytes) will not be parsed. Defaults to 4 MiB.
+	"max_size_file_to_parse": 4194304
 }

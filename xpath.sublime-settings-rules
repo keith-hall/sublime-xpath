@@ -11,7 +11,7 @@
 	  //"allowed_values": [true, false]
 	  "type": "bool"
 	},
-	{ "keys": ["max_query_history", "max_results_to_show", "live_query_delay"],
+	{ "keys": ["max_query_history", "max_results_to_show", "live_query_delay", "max_size_file_to_parse"],
 	  "type": "int"
 	},
 	{ "key": "attributes_to_include",

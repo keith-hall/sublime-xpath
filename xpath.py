@@ -98,6 +98,7 @@ def ensureTreeCacheIsCurrent(view):
     
     global xml_roots
     global xml_elements
+    global settings
     if old_count is None or new_count > old_count:
         change_counters[view.id()] = new_count
         view.set_status('xpath', 'XML being parsed...')
@@ -105,12 +106,14 @@ def ensureTreeCacheIsCurrent(view):
         
         xml_roots[view.id()] = []
         xml_elements[view.id()] = []
-        for tree, all_elements in buildTreesForView(view):
-            root = None
-            if tree is not None:
-                root = tree.getroot()
-            xml_roots[view.id()].append(root)
-            xml_elements[view.id()].append(all_elements)
+        
+        if view.size() <= settings.get('max_size_file_to_parse'):
+            for tree, all_elements in buildTreesForView(view):
+                root = None
+                if tree is not None:
+                    root = tree.getroot()
+                xml_roots[view.id()].append(root)
+                xml_elements[view.id()].append(all_elements)
         
         view.erase_status('xpath')
         global previous_first_selection
