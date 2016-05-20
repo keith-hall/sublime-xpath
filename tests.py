@@ -10,7 +10,7 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
     def run(self, edit):
         try:
             xml = sublime.load_resource(sublime.find_resources('example_xml_ns.xml')[0])
-            tree, all_elements = lxml_etree_parse_xml_string_with_location(xml)
+            tree, all_elements = lxml_etree_parse_xml_string_with_location(xml) # we deliberately don't pass an array etc. here so that it will treat each character as a separate chunk - useful for testing that it correctly finds positions even when they are split over multiple chunks
             
             def replace_view_contents(view, new_contents):
                 view.erase(edit, sublime.Region(0, view.size()))
@@ -101,8 +101,6 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 # - entire
                 # - none
                 
-                # TODO: test comments, including ones that contain < and > characters i.e. commented out XML <!-- <foobar><example /></foobar> -->
-                
                 def assert_expected_cursors(expected_cursors, details):
                     assert_expected_cursors_for_view(view, expected_cursors, details)
                 
@@ -125,9 +123,9 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                     
                     goto_xpath('(//text())[1]', None, None, [(29, 32)])
                     goto_xpath("//text()[contains(., 'text')]", None, None, [(2643, 2654)])
-                    goto_xpath("/test/text/following-sibling::text() | /test/text/following-sibling::*/text()", None, None, [(2780, 2801), (2806, 2821), (2827, 2844)]) # text nodes including CDATA
+                    goto_xpath("/test/text/following-sibling::text() | /test/text/following-sibling::*/text()", None, None, [(2780, 2801), (2806, 2821), (2827, 2845), (2900, 2971), (2979, 2981)]) # text nodes including CDATA
                     goto_xpath('(//*)[position() < 3]', 'open', None, [(24, 28), (33, 38)]) # multiple elements
-                    goto_xpath('(//*)[position() < 3]', 'names', None, [(24, 28), (33, 38), (1189, 1194), (2846, 2850)]) # multiple elements
+                    goto_xpath('(//*)[position() < 3]', 'names', None, [(24, 28), (33, 38), (1189, 1194), (2983, 2987)]) # multiple elements
                     goto_xpath('/test/default3:more[2]/an2:yet_another', 'open', None, [(1950, 1964)])
                     # relative nodes from context node
                     goto_xpath('../preceding-sibling::default3:more/descendant-or-self::*', 'open', None, [(1199, 1203), (1480, 1490)])
@@ -139,6 +137,10 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                     goto_xpath('/test/text/@*', None, 'name', [(2615, 2620), (2629, 2634)])
                     goto_xpath('/test/text/@*', None, 'entire', [(2615, 2628), (2629, 2642)])
                     goto_xpath('//@abc:another_value', None, 'entire', [(2728, 2753)]) # attribute with namespace prefix
+                    
+                    # comments
+                    goto_xpath('(/test/node()/comment())[1]', 'entire', None, [(60, 751)])
+                    goto_xpath('/test/text2/comment()', 'entire', None, [(2852, 2900)]) # comments containing < and > characters i.e. commented out XML <!-- <foobar><example /></foobar> -->
                     
                     random_pos = random.randint(0, view.size())
                     view.sel().clear()
@@ -154,9 +156,9 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 def relative_tests():
                     goto_xpath('/test', 'open', None, [(24, 28)])
                     goto_relative('self', 'open', [(24, 28)])
-                    goto_relative('self', 'close', [(2846, 2850)])
-                    goto_relative('self', 'content', [(29, 2844)])
-                    goto_relative('self', 'entire', [(23, 2851)])
+                    goto_relative('self', 'close', [(2983, 2987)])
+                    goto_relative('self', 'content', [(29, 2981)])
+                    goto_relative('self', 'entire', [(23, 2988)])
                     
                     goto_xpath('/test/default1:hello/default2:world', 'open', None, [(987, 992)])
                     goto_relative('self', 'close', [(1178, 1183)])
@@ -180,6 +182,9 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                     goto_relative('parent', 'open', [(24, 28), (1576, 1580)])
                     
                     goto_relative('prev', 'open', [(24, 28), (1576, 1580)]) # prev should fail, so assert the position is the same as previously
+                    
+                    goto_xpath('/test/default1:hello/default2:world', 'open', None, [(987, 992)])
+                    goto_relative('prev', 'open', [(759, 982)]) # comment
                 
                 xpath_tests()
                 relative_tests()
@@ -199,7 +204,6 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 tests.append(('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" />\n</root>', len('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" /'), None, 'invalid tag name')) # reported just before the `>` is parsed
                 tests.append(('<root>\n\t<!-- ', len('<root>\n\t<!-- '), None, 'unterminated comment'))
                 tests.append(('<root>\n</root> text', len('<root>\n</root> '), None, 'unexpected content after root element'))
-                
                 
                 for test in tests:
                     view = create_test_view()

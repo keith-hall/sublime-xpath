@@ -43,18 +43,19 @@ class LocationAwareComment(etree.CommentBase):
 
 # http://stackoverflow.com/questions/36246014/lxml-use-default-class-element-lookup-and-treebuilder-parser-target-at-the-sam
 class LocationAwareXMLParser:
-    RE_SPLIT_XML = re.compile('<!\[CDATA\[|\]\]>|[<>]')
+    SPLIT_XML_TOKENS = [('<![CDATA[', ']]>'), ('<!--', '-->'), ('<', '>')]
+    LARGEST_BEGIN_TOKEN = max([begin for begin, end in SPLIT_XML_TOKENS], key=len)
+    LARGEST_END_TOKEN = max([end for begin, end in SPLIT_XML_TOKENS], key=len)
+    LARGEST_TOKEN = len(max(LARGEST_BEGIN_TOKEN, LARGEST_END_TOKEN))
     
     def __init__(self, position_offset = 0, line_number_offset = 0, **parser_options):
-        def getLocation(index=None):
-            if index is None:
-                index = -3
-            return TagPos(self._positions[index], self._positions[-1])
+        def getLocation():
+            return TagPos(self._positions[-3], self._positions[-1])
         
         class Target:
             start = lambda t, tag, attrib=None, nsmap=None: self.element_start(tag, attrib, nsmap, getLocation())
             end = lambda t, tag: self.element_end(tag, getLocation())
-            data = lambda t, data: self.text_data(data, getLocation(-1))
+            data = lambda t, data: self.text_data(data, None)
             comment = lambda t, comment: self.comment(comment, getLocation())
             pi = lambda t, data: self.pi(data, getLocation())
             doctype = lambda t, name, public_identifier, system_identifier: self.doctype(name, public_identifier, system_identifier, getLocation())
@@ -67,40 +68,85 @@ class LocationAwareXMLParser:
     
     def _reset(self):
         self._position_offset = self._initial_position_offset
-        self._remainder = ''
         self._positions = []
         self._line_number = 1 + self._initial_line_number_offset
         self._column_number = 1
+        self._expect_end = None
+        self._remainder = ''
+        self._is_final_chunk = False
     
     def feed(self, chunk):
-        start_search_at = len(self._remainder)
+        # NOTE: it doesn't support DOCTYPE nesting, but such things are not represented in the tree anyway, and after the doctypes, it should get the locations correct again
         chunk = self._remainder + chunk
-        self._remainder = ''
+        
+        # if the position is not far enough from the end of the string to rule out what it isn't
+        # - i.e. if our chunk ends with "hello world<", we need more data before we know if it is a <![CDATA[ or a <!-- or just a <
+        process_until = len(chunk) - (self.LARGEST_TOKEN if not self._is_final_chunk else 0)
+        if process_until < 0:
+            process_until = 0
         chunk_offset = 0
         
-        for result in self.RE_SPLIT_XML.finditer(chunk, start_search_at): # find the next sigificant XML control char, so we can manually know the location
-            self._positions.append((self._position_offset + chunk_offset, self._position_offset + result.start()))
-            self._feed(chunk[chunk_offset:result.start()])
+        while chunk_offset < process_until:
+            # if we previously found a beginning token but have not yet found the corresponding end token
+            if self._expect_end is not None:
+                pos = chunk.find(self._expect_end, chunk_offset, process_until)
+                if pos == -1:
+                    break
+                else:
+                    # feed everything before the matching end sequence
+                    self._feed(chunk[chunk_offset:pos], (self._position_offset, self._position_offset + pos))
+                    
+                    # feed the end sequence itself
+                    self._feed(self._expect_end, (self._position_offset + pos, self._position_offset + pos + len(self._expect_end)))
+                    
+                    chunk_offset = pos + len(self._expect_end)
+                    self._expect_end = None
             
-            self._positions.append((self._position_offset + result.start(), self._position_offset + result.end()))
-            self._feed(chunk[result.start():result.end()])
-            chunk_offset = result.end()
-        self._remainder = chunk[chunk_offset:]
-        self._position_offset += chunk_offset
-    
-    def _feed(self, text):
-        self._parser.feed(bytes(text, 'UTF-8')) # feed as bytes, otherwise doesn't work on OSX, and encoding declarations in the prolog can cause exceptions - http://lxml.de/parsing.html#python-unicode-strings
-        line_count = text.count('\n')
-        if line_count > 0:
-            self._line_number += line_count
-            self._column_number = len(text) - text.rfind('\n')
-        else:
-            self._column_number += len(text)
+            # if we are not looking for an end token
+            if self._expect_end is None:
+                # find the next sigificant XML control char, so we can manually know the location
+                pos = chunk.find('<', chunk_offset, process_until)
+                if pos == -1:
+                    break
+                else:
+                    for begin_token, end_token in self.SPLIT_XML_TOKENS:
+                        if chunk.find(begin_token, pos, pos + len(begin_token)) == pos:
+                            self._expect_end = end_token
+                            break
+                    
+                    # feed everything before the match
+                    pos1 = self._position_offset + pos
+                    self._feed(chunk[chunk_offset:pos], (self._position_offset + chunk_offset, pos1))
+                    
+                    # feed the "begin" sequence itself
+                    pos2 = pos1 + len(begin_token)
+                    self._feed(begin_token, (pos1, pos2))
+                    
+                    chunk_offset = pos + len(begin_token)
         
+        if process_until < chunk_offset:
+            process_until = chunk_offset
+        
+        # feed the rest of the chunk
+        self._position_offset += process_until
+        self._feed(chunk[chunk_offset:process_until], None)
+        self._remainder = chunk[process_until:]
+    
+    def _feed(self, text, position):
+        if position is not None:
+            self._positions.append(position)
+        if len(text) > 0:
+            self._parser.feed(bytes(text, 'UTF-8')) # feed as bytes, otherwise doesn't work on OSX, and encoding declarations in the prolog can cause exceptions - http://lxml.de/parsing.html#python-unicode-strings
+            line_count = text.count('\n')
+            if line_count > 0:
+                self._line_number += line_count
+                self._column_number = len(text) - text.rfind('\n')
+            else:
+                self._column_number += len(text)
     
     def close(self):
-        self._positions.append((self._position_offset, self._position_offset + len(self._remainder)))
-        self._feed(self._remainder)
+        self._is_final_chunk = True
+        self.feed('')
         result = self._parser.close()
         self._reset()
         return result
