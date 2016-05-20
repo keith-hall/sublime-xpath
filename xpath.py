@@ -152,6 +152,7 @@ def getXPathOfNodes(nodes, args):
     case_sensitive = settings.get_from_args_then_settings('case_sensitive', args)
     all_attributes = settings.get_from_args_then_settings('show_all_attributes', args)
     wanted_attributes = settings.get('attributes_to_include')
+    include_comment_nodes = settings.get_from_args_then_settings('show_comment_nodes', args)
     if not case_sensitive:
         wanted_attributes = [attrib.lower() for attrib in wanted_attributes]
     
@@ -168,17 +169,23 @@ def getXPathOfNodes(nodes, args):
         return tag
     
     def getNodePathPart(node, namespaces):
-        tag = getTagNameWithMappedPrefix(node, namespaces)
-        
-        output = tag[2]
+        tag = None
+        output = None
+        if isinstance(node, LocationAwareComment):
+            output = 'comment()'
+        else:
+            tag = getTagNameWithMappedPrefix(node, namespaces)
+            output = tag[2]
         
         if include_indexes:
             siblings = node.itersiblings(preceding = True)
             index = 1
             
             def compare(sibling):
-                if not isinstance(sibling, LocationAwareElement): # skip comments
+                if isinstance(sibling, LocationAwareElement) != isinstance(node, LocationAwareElement): # if the two nodes are of different types, they are not the same
                     return False
+                if isinstance(node, LocationAwareComment): # if they are both comment nodes, they are the same
+                    return True
                 sibling_tag = getTagNameWithMappedPrefix(sibling, namespaces)
                 return sibling_tag == tag # namespace uri, prefix and tag name must all match
             
@@ -221,7 +228,7 @@ def getXPathOfNodes(nodes, args):
         return output
     
     def getNodePathSegments(node, namespaces, root):
-        if isinstance(node, etree.CommentBase):
+        if isinstance(node, etree.CommentBase) and not include_comment_nodes:
             node = node.getparent()
         while node != root:
             yield getNodePathPart(node, namespaces)

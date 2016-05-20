@@ -350,6 +350,8 @@ def execute_xpath_query(tree, xpath, context_node = None, **variables):
     """Execute the precompiled xpath query on the tree and return the results as a list."""
     if context_node is None: # explicitly check for None rather than using "or", because it is treated as a list
         context_node = tree
+    if isinstance(context_node, etree.CommentBase):
+        context_node = context_node.getparent()
     result = xpath(context_node, **variables)
     if isinstance(result, list):
         return result

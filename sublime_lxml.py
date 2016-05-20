@@ -25,11 +25,10 @@ def getNodePositions(view, node):
     pos = open_pos.begin()
     
     for child in node.iterchildren():
-        if isinstance(child, LocationAwareElement): # skip comments
-            child_open_pos, child_close_pos = getNodePosition(view, child)
-            yield (node, pos, child_open_pos.begin(), True)
-            pos = child_close_pos.end()
-            yield (child, child_open_pos.begin(), pos, len(child) == 0)
+        child_open_pos, child_close_pos = getNodePosition(view, child)
+        yield (node, pos, child_open_pos.begin(), True)
+        pos = child_close_pos.end()
+        yield (child, child_open_pos.begin(), pos, len(child) == 0)
     
     yield (node, pos, close_pos.end(), True)
 

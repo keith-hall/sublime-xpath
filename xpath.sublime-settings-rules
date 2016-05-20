@@ -7,7 +7,7 @@
 	  "allowed_values": ["name", "value", "entire"],
       "type": "str"
 	},
-	{ "keys": ["intelligent_auto_complete", "normalize_whitespace_in_preview", "global_query_history", "prefill_path_at_cursor", "only_show_xpath_if_saved", "show_namespace_prefixes_from_query", "live_mode", "copy_unique_path_only", "show_attributes_in_hierarchy", "show_hierarchy_only", "case_sensitive", "show_all_attributes", "autocomplete_self_axis_with_star"],
+	{ "keys": ["intelligent_auto_complete", "normalize_whitespace_in_preview", "global_query_history", "prefill_path_at_cursor", "only_show_xpath_if_saved", "show_namespace_prefixes_from_query", "live_mode", "copy_unique_path_only", "show_attributes_in_hierarchy", "show_hierarchy_only", "case_sensitive", "show_all_attributes", "autocomplete_self_axis_with_star", "show_comment_nodes"],
 	  //"allowed_values": [true, false]
 	  "type": "bool"
 	},

@@ -55,6 +55,7 @@ See [default settings](https://github.com/rosshadden/sublime-xpath/blob/master/x
   - `none` - Do not move the cursor.
 - `sgml_selector` - a scope selector to determine what to parse as XML and enable XPath functions for. Defaults to HTML and XML, excluding things like ASP and PHP.
 - `max_size_file_to_parse` - the maximum size file (in bytes) that will be parsed by this plugin.
+- `show_comment_nodes` - whether or not to include `comment()` in the path shown in the status bar/clipboard, when the cursor is inside a comment node.
 
 No key bindings are set by default, but an example sublime-keymap file is included, to show the available commands and arguments. [See this documentation](http://docs.sublimetext.info/en/latest/customization/key_bindings.html) for more details about keybindings in ST3.
 

@@ -51,5 +51,7 @@
 	// which scopes to parse, show XPath at cursors for, and allow XPath queries on
 	"sgml_selector": "text.xml, text.html.basic - embedding.php",
 	// files larger than this size (in bytes) will not be parsed. Defaults to 4 MiB.
-	"max_size_file_to_parse": 4194304
+	"max_size_file_to_parse": 4194304,
+	// whether or not to include comment nodes in the XPath that is displayed in the status bar/copied to the clipboard
+	"show_comment_nodes": false
 }
