@@ -204,6 +204,11 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 tests.append(('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" />\n</root>', len('<root>\n\t<таĝñäᴹə ατţř="șƬűʃ⨍&amp;" /'), None, 'invalid tag name')) # reported just before the `>` is parsed
                 tests.append(('<root>\n\t<!-- ', len('<root>\n\t<!-- '), None, 'unterminated comment'))
                 tests.append(('<root>\n</root> text', len('<root>\n</root> '), None, 'unexpected content after root element'))
+                tests.append(('<root>\n\thello & welcome\n</root>', len('<root>\n\thello &'), None, 'unescaped ampersand'))
+                tests.append(('<root>\n\thello &amp welcome\n</root>', len('<root>\n\thello &amp'), None, 'missing semicolon'))
+                tests.append(('<root>\n\t1 < 2\n</root>', len('<root>\n\t1 <'), None, 'unescaped less than sign'))
+                tests.append(('<root>\n\t<test \n</root>', len('<root>\n\t<test \n'), None, 'unclosed element'))
+                tests.append(('<root>\n\t<!-- comment containing double dashes -- -->\n</root>', len('<root>\n\t<!-- comment containing double dashes '), None, 'comment containing double dashes'))
                 
                 for test in tests:
                     view = create_test_view()
