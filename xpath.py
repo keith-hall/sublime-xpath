@@ -1096,3 +1096,10 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
             completions += [completion for completion in generics if completion[0].startswith(last_location_step)]
         
     return completions
+
+class XpathStar(sublime_plugin.TextCommand):
+    def run(self, view, **kwargs):
+        if kwargs['commit_completion']:
+            self.view.run_command('commit_completion')
+        self.view.run_command('insert', { 'characters': '*' })
+        self.view.run_command('hide_auto_complete')
