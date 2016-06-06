@@ -182,6 +182,7 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
         self._most_recent = None
         self._in_tail = None
         self._all_namespaces = collections.OrderedDict()
+        self._root = None
     
     def _flush(self):
         if self._text:
@@ -237,12 +238,14 @@ class LocationAwareTreeBuilder(LocationAwareXMLParser):
     def _appendNode(self, node):
         if self._element_stack: # if we have anything on the stack
             self._element_stack[-1].append(node) # append the node as a child to the last/top element on the stack
+        elif self._root is None and isinstance(node, etree.ElementBase):
+            self._root = node
         self._all_elements.append(node)
         self._most_recent = node
     
     def document_end(self):
         """Return the root node and a list of all elements (and comments) found in the document, to keep their proxy alive."""
-        return (self._most_recent, self._all_namespaces, self._all_elements)
+        return (self._root, self._all_namespaces, self._all_elements)
 
 
 def lxml_etree_parse_xml_string_with_location(xml_chunks, position_offset = 0, line_number_offset = 0, should_stop = None):
