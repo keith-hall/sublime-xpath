@@ -30,3 +30,4 @@
 		"foobar" another_value = "super" xmlns:abc="abc" abc:another_value="value" /> lorem ipsum etc.</text>abc<![CDATA[def]]>ghi<hij><![CDATA[klm]]></hij><![CDATA[nop]]>
 	<text2><!-- comment with <embedded /> <tags></tags> --><![CDATA[cdata with <embedded /> <tags></tags> and <!-- comments -->]]></text2>
 </test>
+<!-- this comment, that comes after the root element has closed, will not appear in the ElementTree -->
