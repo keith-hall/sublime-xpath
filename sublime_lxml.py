@@ -238,13 +238,13 @@ def getElementXMLPreview(view, node, maxlen):
 def parse_xpath_query_for_completions(view, completion_position):
     """Given a view with XPath syntax and a position where completions are desired, parse the xpath query and return the relevant sub queries."""
     
-    selectors = ['punctuation.separator.xpath.arguments', 'punctuation.definition.arguments.begin.xpath.subexpression', 'punctuation.definition.arguments.end.xpath.subexpression', 'punctuation.definition.arguments.begin.xpath.predicate', 'punctuation.definition.arguments.end.xpath.predicate', 'entity.name.function.xpath', 'keyword.operator']
+    selectors = ['punctuation.definition.predicate.begin', 'punctuation.definition.predicate.end', 'punctuation.definition.subexpression.begin', 'punctuation.definition.subexpression.end', 'support.function', 'keyword.operator', 'punctuation.definition.arguments.subexpression.begin', 'punctuation.definition.arguments.subexpression.end', 'punctuation.separator.arguments']
     selector_regions = []
     pos = 0
     for scope in get_scopes(view, 0, completion_position):
         for selector in selectors:
             if selector in scope[0]:
-                if scope[0].endswith('entity.name.function.xpath punctuation.definition.arguments.begin.xpath.subexpression comment '): # combine the function name with the open parenthesis
+                if scope[0].endswith('punctuation.definition.arguments.subexpression.begin.xpath '): # combine the function name with the open parenthesis
                     selector_regions[-1] = (scope[0], sublime.Region(selector_regions[-1][1].begin(), scope[2] + 1))
                 else:
                     selector_regions.append((None, sublime.Region(pos, scope[1])))

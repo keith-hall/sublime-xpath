@@ -1,13 +1,13 @@
 %YAML 1.2
 ---
 name: XPath 1.0
-scope: query.xml.xpath # http://www.w3.org/TR/xpath/
+scope: text.xpath # http://www.w3.org/TR/xpath/
 variables:
   QName: '(?![\d.\-])[\w.\-]+'
   Prefix: '(?:{{QName}}\s*:)?'
-  NCName: '{{Prefix}}(?:{{QName}}|\*)'
+  NCName: '{{Prefix}}(?:{{QName}}|(\*))'
   Attribute: '@\s*(?:{{NCName}})?'
-contexts: # NOTE: these scope names don't represent what they should, they are set for best syntax highlighting
+contexts:
   main:
     - match: '#.*$'
       scope: syntax_test.marker # needed to get syntax tests working properly, otherwise it treats the syntax test definition line as an xpath... https://github.com/SublimeTextIssues/Core/issues/1152
@@ -15,123 +15,151 @@ contexts: # NOTE: these scope names don't represent what they should, they are s
       scope: invalid.illegal.stray-bracket-end.xpath
     - match: ''
       push: base
+
   base_without_pop:
     - include: location_step
     - match: '-*\('
-      scope: punctuation.definition.arguments.begin.xpath.subexpression comment
+      scope: punctuation.definition.subexpression.begin.xpath
       set: [inside_subexpression, base_disallow_pop] # don't allow an opening parenthesis followed immediately by a closing parenthesis
-    - match: '(")([^"]*)(")'
-      captures:
-        0: string.quoted.double.xpath # Literal
-        1: punctuation.definition.string.begin.xpath
-        3: punctuation.definition.string.end.xpath
-      set: operator
-    - match: "(')([^']*)(')"
-      captures:
-        0: string.quoted.single.xpath # Literal
-        1: punctuation.definition.string.begin.xpath
-        3: punctuation.definition.string.end.xpath
-      set: operator
+    - match: '"'
+      scope: punctuation.definition.string.begin.xpath
+      set: [operator, inside_string_double]
+    - match: "'"
+      scope: punctuation.definition.string.begin.xpath
+      set: [operator, inside_string_single]
     - match: '-*(?:\d+\.\d*|\.?\d+)' # lxml allows '2', '2.', '.5', '2.5' and '---3' for example - '2.' is treated as '2.0'
       scope: constant.numeric.xpath # Number
       set: operator
     - match: '\$({{QName}})?'
-      scope: entity.name.variable.xpath support.function.builtin.xpath.variable # VariableReference
+      scope: variable.other.xpath # VariableReference
       set: operator_or_predicate_or_location_step
     - include: location_test
+
+  inside_string_double:
+    - meta_scope: string.quoted.double.xpath # Literal
+    - match: '"'
+      scope: punctuation.definition.string.end.xpath
+      pop: true
+
+  inside_string_single:
+    - meta_scope: string.quoted.single.xpath # Literal
+    - match: "'"
+      scope: punctuation.definition.string.end.xpath
+      pop: true
+
   inside_subexpression:
     - meta_scope: meta.block.query.xpath
     - match: '\)'
-      scope: punctuation.definition.arguments.end.xpath.subexpression comment
+      scope: punctuation.definition.subexpression.end.xpath
       set: operator_or_predicate_or_location_step
+
   base:
     - include: pop_me
     - include: base_without_pop
     - include: unexpected_token
+
   location_step:
     - match: '/{1,2}'
-      scope: punctuation.separator.xpath.location_step
+      scope: punctuation.separator.location_step.xpath
       set: location_test_or_invalid
+
   axis_step:
     - match: '\.{1,2}'
-      scope: keyword.control.flow.xpath # AxisStep
+      scope: variable.parameter.xpath # AxisStep
       set: operator_or_location_step
+
   base_disallow_pop:
     - include: base_without_pop
     - match: '[,\]\)]'
       scope: invalid.illegal.unexpected_token.xpath
+
   pop_me:
     - match: '(?=[,\]\)])'
       pop: true
+
   operator:
     - match: 'and|or|mod|div'
       scope: keyword.operator.word.xpath # Operator https://forum.sublimetext.com/t/dev-build-3110/19214/31
       set: base_disallow_pop # show invalid end predicate when an operator is at the end of a predicate for example //*[a or ]
     - match: '\*|\||\+|-|!?=|<=?|>=?'
-      scope: keyword.operator.word.xpath # Operator
+      scope: keyword.operator.xpath # Operator
       set: base_disallow_pop # show invalid end predicate when an operator is at the end of a predicate for example //*[a or ]
     - include: pop_me
     - include: unexpected_token
+
   operator_or_predicate:
     - match: '\['
-      scope: punctuation.definition.arguments.begin.xpath.predicate comment
+      scope: punctuation.definition.predicate.begin.xpath
       set: [inside_predicate, base_disallow_pop]
     - include: operator
+
   operator_or_predicate_or_location_step:
     - include: location_step
     - include: operator_or_predicate
+
   operator_or_location_step:
     - include: location_step
     - include: operator
+
   inside_predicate:
-    - meta_scope: xpath.predicate
+    - meta_scope: meta.predicate.xpath
     - match: '\]'
-      scope: punctuation.definition.arguments.end.xpath.predicate comment
+      scope: punctuation.definition.predicate.end.xpath
       set: operator_or_predicate_or_location_step
     - include: unexpected_token
+
   node_type:
     - match: '(comment|text|processing-instruction|node)\s*\(\s*\)'
-      scope: storage.type.xpath.node_type # NodeType
+      scope: storage.type.node_type.xpath # NodeType
       set: operator_or_predicate_or_location_step
+
   name_test:
     - match: '{{NCName}}'
-      scope: variable.parameter.xpath # NameTest
+      captures:
+        0: entity.name.tag.xpath # NameTest
+        1: variable.parameter.xpath # NameTest
       set: operator_or_predicate_or_location_step
+
   node_test:
     - include: node_type
     - include: name_test
+
   node_test_or_invalid:
     - include: node_test
     - include: unexpected_token
+
   location_test:
     - match: '{{Attribute}}'
-      scope: keyword.control.flow.xpath # Attribute
+      captures:
+        0: entity.other.attribute-name.xpath # Attribute
+        1: variable.parameter.xpath
       set: operator_or_predicate_or_location_step
     - match: '((?:ancestor(?:-or-self)?|attribute|child|descendant(?:-or-self)?|following(?:-sibling)?|namespace|parent|preceding(?:-sibling)?|self)\s*::)\s*'
       captures:
-        1: constant.language.xpath.axis_name # AxisName
-        2: variable.parameter.xpath # NameTest
-        3: keyword.control.flow.xpath # Attribute
+        1: constant.language.axis_name.xpath # AxisName
       set: node_test_or_invalid
     - include: node_type
     - match: '({{Prefix}}{{QName}})\s*(\()'
       captures:
-        0: entity.name.function.xpath # NameTest
-        2: punctuation.definition.arguments.begin.xpath.subexpression comment
+        1: support.function.builtin.xpath # NameTest 
+        2: punctuation.definition.arguments.subexpression.begin.xpath
       set: [inside_function, base]
     - include: name_test
     - include: axis_step
+
   location_test_or_invalid:
     - include: location_test
     - include: unexpected_token
+
   inside_function:
     - meta_scope: meta.function-call.xpath
     - match: '\)'
-      scope: punctuation.definition.arguments.end.xpath.subexpression comment
+      scope: punctuation.definition.arguments.subexpression.end.xpath
       set: operator_or_predicate_or_location_step
     - match: ','
-      scope: punctuation.separator.xpath.arguments comment
+      scope: punctuation.separator.arguments.xpath
       push: base
+
   unexpected_token:
     - match: '[)\]]'
       scope: invalid.illegal.stray-bracket-end.xpath

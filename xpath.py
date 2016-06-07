@@ -932,7 +932,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
     def show_input_panel(self, initial_value):
         super().show_input_panel(initial_value)
         if len(self.arguments['auto_completion_triggers'] or '') > 0:
-            self.input_panel.settings().set('auto_complete_triggers', [ {'selector': 'query.xml.xpath - string', 'characters': self.arguments['auto_completion_triggers']} ])
+            self.input_panel.settings().set('auto_complete_triggers', [ {'selector': 'text.xpath - string', 'characters': self.arguments['auto_completion_triggers']} ])
     
     def on_query_completions(self, prefix, locations): # moved from .sublime-completions file here - https://github.com/SublimeTextIssues/Core/issues/819
         flags = sublime.INHIBIT_WORD_COMPLETIONS
@@ -1097,9 +1097,9 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
         
     return completions
 
-class XpathStar(sublime_plugin.TextCommand):
+class XpathCharacter(sublime_plugin.TextCommand):
     def run(self, view, **kwargs):
         if kwargs['commit_completion']:
             self.view.run_command('commit_completion')
-        self.view.run_command('insert', { 'characters': '*' })
+        self.view.run_command('insert', { 'characters': kwargs['character'] })
         self.view.run_command('hide_auto_complete')

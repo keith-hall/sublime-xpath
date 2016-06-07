@@ -1,28 +1,39 @@
 # SYNTAX TEST "xpath.sublime-syntax"
-(/hello/descendant::world)[1]
-# <- meta.block.query.xpath punctuation.definition.arguments.begin.xpath.subexpression comment
-#^ meta.block.query.xpath punctuation.separator.xpath.location_step
-# ^^^^^ meta.block.query.xpath variable.parameter.xpath
-#       ^^^^^^^^^^^^ meta.block.query.xpath constant.language.xpath.axis_name
-#                   ^^^^^ meta.block.query.xpath variable.parameter.xpath
-#                        ^ meta.block.query.xpath punctuation.definition.arguments.end.xpath.subexpression comment
-#                         ^ xpath.predicate punctuation.definition.arguments.begin.xpath.predicate
-#                          ^ xpath.predicate constant.numeric.xpath
-#                           ^ xpath.predicate punctuation.definition.arguments.end.xpath.predicate
+ (/hello/descendant::world)[1]
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.block.query.xpath
+#<- - meta.block.query.xpath
+#                          ^ - meta.block.query.xpath
+#^ punctuation.definition.subexpression.begin.xpath
+# ^ punctuation.separator.location_step.xpath
+#  ^^^^^ variable.parameter.xpath
+#        ^^^^^^^^^^^^ constant.language.axis_name.xpath
+#                    ^^^^^ variable.parameter.xpath
+#                         ^ punctuation.definition.subexpression.end.xpath
+#                          ^^^ meta.predicate.xpath
+#                          ^ punctuation.definition.predicate.begin.xpath
+#                           ^ constant.numeric.xpath
+#                            ^ punctuation.definition.predicate.end.xpath
 
 / @ hello/ text () / ancestor :: test :*
 # ^ keyword.control.flow.xpath
 #   ^^^^^ keyword.control.flow.xpath
-#          ^^^^ storage.type.xpath.node_type
-#               ^^ storage.type.xpath.node_type
-#                    ^^^^^^^^ constant.language.xpath.axis_name
-#                             ^^ constant.language.xpath.axis_name
+#          ^^^^ storage.type.node_type.xpath
+#               ^^ storage.type.node_type.xpath
+#                    ^^^^^^^^ constant.language.axis_name.xpath
+#                             ^^ constant.language.axis_name.xpath
 #                                ^^^^ variable.parameter.xpath
 #                                     ^^ variable.parameter.xpath
  -3.div--(-.2)
-# ^^ query.xml.xpath constant.numeric.xpath
-#   ^^^ query.xml.xpath keyword.operator.word.xpath
-#         ^^^ query.xml.xpath constant.numeric.xpath
+# ^^ constant.numeric.xpath
+#   ^^^ keyword.operator.word.xpath
+#         ^^^ constant.numeric.xpath
+/*[.="line spanning
+multiple lines"]
+#^^^^^^^^^^^^^^^ meta.predicate.xpath
+#^^^^^^^^^^^^^^ string.quoted.double.xpath
+#             ^ punctuation.definition.string.end.xpath
+#              ^ punctuation.definition.predicate.end.xpath - string
+#                ^ - meta.predicate.xpath
 /*[following::(bar)]
-# .^^^^^^^^^^^ constant.language.xpath.axis_name
-#             ^^^^^ query.xml.xpath invalid.illegal.unexpected_token.xpath
+#  ^^^^^^^^^^^ constant.language.axis_name.xpath
+#             ^^^^^ invalid.illegal.unexpected_token.xpath
