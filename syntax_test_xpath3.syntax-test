@@ -12,17 +12,20 @@
 #   ^ constant.numeric.xpath
 
 /and/ *
-#^^^ variable.parameter.xpath
+#^^^ entity.name.tag.localname.xpath - keyword
 #     ^ variable.parameter.xpath
 
 / for/../hello.world/ ns :foobar
-# ^^^ variable.parameter.xpath
-#     ^^ keyword.control.flow.xpath
-#        ^^^^^^^^^^^ variable.parameter.xpath - keyword.control.flow.xpath
-#                     ^^^^^^^^^^ variable.parameter.xpath
+# ^^^ entity.name.tag.localname.xpath
+#     ^^ variable.parameter.xpath
+#        ^^^^^^^^^^^ entity.name.tag.localname.xpath - keyword - variable
+#                     ^^^^^^^^^^ entity.name.tag
+#                     ^^ entity.name.tag.namespace.xpath
+#                        ^ punctuation.separator.namespace.xpath
+#                         ^^^^^^ entity.name.tag.localname.xpath
 
 //example[1]/*[starts-with(local-name(), "hello") and./text()and"hello[world][1]"+*
-# ^^^^^^^ variable.parameter.xpath
+# ^^^^^^^ entity.name.tag.localname.xpath
 #        ^^^ meta.predicate.xpath
 #        ^ punctuation.definition.predicate.begin.xpath
 #         ^ constant.numeric.xpath
@@ -31,10 +34,10 @@
 #             ^ punctuation.definition.predicate.begin.xpath
 #             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.predicate.xpath
 #              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call.xpath
-#              ^^^^^^^^^^^ entity.name.function.xpath
+#              ^^^^^^^^^^^ support.function.localname.xpath
 #                         ^ punctuation.definition.arguments.subexpression.begin.xpath
 #                          ^^^^^^^^^^^^ meta.function-call.xpath meta.function-call.xpath
-#                          ^^^^^^^^^^ entity.name.function.xpath
+#                          ^^^^^^^^^^ support.function.localname.xpath
 #                                    ^ punctuation.definition.arguments.subexpression.begin.xpath
 #                                     ^ punctuation.definition.arguments.subexpression.end.xpath
 #                                      ^ punctuation.separator.arguments.xpath
@@ -42,13 +45,23 @@
 #                                               ^ punctuation.definition.arguments.subexpression.end.xpath
 #                                                ^ - meta.function-call.xpath
 #                                                 ^^^ keyword.operator.word.xpath
-#                                                    ^ keyword.control.flow.xpath
+#                                                    ^ variable.parameter.xpath
 #                                                     ^ punctuation.separator.location_step.xpath
 #                                                      ^^^^^^ storage.type.node_type.xpath
 #                                                            ^^^ keyword.operator.word.xpath
-#                                                               ^^^^^^^^^^^^^^^^^ string.quoted.double.xpath
+#                                                               ^^^^^^^^^^^^^^^^^ string.quoted.double.xpath - constant - entity.tag - variable
 #                                                                                ^ keyword.operator.xpath
 #                                                                                 ^ variable.parameter.xpath
+
+/*[ns :func(1234)]
+#  ^^^^^^^^^^^^^^ meta.function-call.xpath
+# ^ - meta.function-call.xpath
+#                ^ - meta.function-call.xpath
+#  ^^^^^^^^ support.function
+#  ^^ support.function.namespace.xpath
+#     ^ support.function.xpath punctuation.separator.namespace.xpath
+#      ^^^^ support.function.localname.xpath
+#          ^ - support.function
 
 ///5*+2'hello'
 # ^^^^^^^^^^^^ meta.predicate.xpath invalid.illegal.unexpected_token.xpath

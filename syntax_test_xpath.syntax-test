@@ -1,23 +1,25 @@
 # SYNTAX TEST "xpath.sublime-syntax"
 /element1/ns:element2/child::*[position() > 1  and substring-after(., 'hello world') = "test(123)"]/text()
 # <- punctuation.separator.location_step.xpath - variable.parameter.xpath
-#^^^^^^^^ variable.parameter.xpath - punctuation.separator.location_step.xpath
+#^^^^^^^^ entity.name.tag.localname.xpath - punctuation.separator.location_step.xpath
 #        ^ punctuation.separator.location_step.xpath
-#         ^^^^^^^^^^^ variable.parameter.xpath
+#         ^^ entity.name.tag.namespace.xpath
+#           ^ entity.name.tag.xpath punctuation.separator.namespace.xpath
+#            ^^^^^^^^ entity.name.tag.localname.xpath
 #                     ^^^^^^^ constant.language.axis_name.xpath
 #                            ^ variable.parameter.xpath
 #                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.predicate.xpath
 #                             ^ punctuation.definition.predicate.begin.xpath
 #                              ^^^^^^^^^^ meta.function-call.xpath
-#                              ^^^^^^^^ entity.name.function.xpath
+#                              ^^^^^^^^ support.function.localname.xpath
 #                                      ^ punctuation.definition.arguments.subexpression.begin.xpath
 #                                       ^ punctuation.definition.arguments.subexpression.end.xpath
 #                                         ^ keyword.operator.xpath
 #                                           ^ constant.numeric.xpath
 #                                              ^^^ keyword.operator.word.xpath
 #                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call.xpath
-#                                                  ^^^^^^^^^^^^^^^ entity.name.function.xpath
-#                                                                  ^ keyword.control.flow.xpath
+#                                                  ^^^^^^^^^^^^^^^ support.function.localname.xpath
+#                                                                  ^ variable.parameter.xpath
 #                                                                   ^ punctuation.separator.arguments.xpath
 #                                                                     ^^^^^^^^^^^^^ string.quoted.single.xpath
 #                                                                     ^ punctuation.definition.string.begin.xpath

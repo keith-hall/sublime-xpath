@@ -4,9 +4,9 @@ name: XPath 1.0
 scope: text.xpath # http://www.w3.org/TR/xpath/
 variables:
   QName: '(?![\d.\-])[\w.\-]+'
-  Prefix: '(?:{{QName}}\s*:)?'
-  NCName: '{{Prefix}}(?:{{QName}}|(\*))'
-  Attribute: '@\s*(?:{{NCName}})?'
+  Prefix: '(?:({{QName}})(\s*)(:))?'
+  NCName: '{{Prefix}}(?:({{QName}})|(\*))'
+  Attribute: '(@)(\s*)(?:{{NCName}})?'
 contexts:
   main:
     - match: '#.*$'
@@ -115,9 +115,12 @@ contexts:
 
   name_test:
     - match: '{{NCName}}'
-      captures:
-        0: entity.name.tag.xpath # NameTest
-        1: variable.parameter.xpath # NameTest
+      captures: # NameTest
+        1: entity.name.tag.namespace.xpath
+        2: entity.name.tag.xpath whitespace.xpath
+        3: entity.name.tag.xpath punctuation.separator.namespace.xpath
+        4: entity.name.tag.localname.xpath
+        5: variable.parameter.xpath
       set: operator_or_predicate_or_location_step
 
   node_test:
@@ -131,18 +134,26 @@ contexts:
   location_test:
     - match: '{{Attribute}}'
       captures:
-        0: entity.other.attribute-name.xpath # Attribute
-        1: variable.parameter.xpath
+        1: entity.other.attribute-name.xpath punctuation.definition.attribute.xpath
+        2: entity.other.attribute-name.xpath whitespace.xpath
+        3: entity.other.attribute-name.namespace.xpath
+        4: entity.other.attribute-name.xpath whitespace.xpath
+        5: entity.other.attribute-name.xpath punctuation.separator.namespace.xpath
+        6: entity.other.attribute-name.localname.xpath
+        7: variable.parameter.xpath
       set: operator_or_predicate_or_location_step
     - match: '((?:ancestor(?:-or-self)?|attribute|child|descendant(?:-or-self)?|following(?:-sibling)?|namespace|parent|preceding(?:-sibling)?|self)\s*::)\s*'
       captures:
         1: constant.language.axis_name.xpath # AxisName
       set: node_test_or_invalid
     - include: node_type
-    - match: '({{Prefix}}{{QName}})\s*(\()'
+    - match: '{{Prefix}}({{QName}})\s*(\()'
       captures:
-        1: support.function.builtin.xpath # NameTest 
-        2: punctuation.definition.arguments.subexpression.begin.xpath
+        1: support.function.namespace.xpath
+        2: support.function.xpath whitespace.xpath
+        3: support.function.xpath punctuation.separator.namespace.xpath
+        4: support.function.localname.xpath # NameTest 
+        5: punctuation.definition.arguments.subexpression.begin.xpath
       set: [inside_function, base]
     - include: name_test
     - include: axis_step
