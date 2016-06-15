@@ -31,3 +31,4 @@
 	<text2><!-- comment with <embedded /> <tags></tags> --><![CDATA[cdata with <embedded /> <tags></tags> and <!-- comments -->]]></text2>
 </test>
 <!-- this comment, that comes after the root element has closed, will not appear in the ElementTree -->
+<?DocumentSaveNo 0?><!-- nor will this processing instruction. Other elements appearing here would cause an error due to being invalid XML, however -->

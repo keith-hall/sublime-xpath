@@ -57,7 +57,7 @@ class LocationAwareXMLParser:
             end = lambda t, tag: self.element_end(tag, getLocation())
             data = lambda t, data: self.text_data(data, None)
             comment = lambda t, comment: self.comment(comment, getLocation())
-            pi = lambda t, data: self.pi(data, getLocation())
+            pi = lambda t, target, data: self.pi(target, data, getLocation())
             doctype = lambda t, name, public_identifier, system_identifier: self.doctype(name, public_identifier, system_identifier, getLocation())
             close = lambda t: self.document_end()
         
@@ -163,7 +163,7 @@ class LocationAwareXMLParser:
     def comment(self, comment, location=None):
         pass
     
-    def pi(self, data, location=None):
+    def pi(self, target, data, location=None):
         pass
     
     def doctype(self, name, public_identifier, system_identifier, location=None):
