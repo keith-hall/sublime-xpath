@@ -50,6 +50,8 @@ class LocationAwareXMLParser:
     
     def __init__(self, position_offset = 0, line_number_offset = 0, **parser_options):
         def getLocation():
+            if len(self._positions) < 3: # prevent IndexError while the XML root element is still being written i.e. the entire contents of the document is just: <test
+                return None
             return TagPos(self._positions[-3], self._positions[-1])
         
         class Target:
