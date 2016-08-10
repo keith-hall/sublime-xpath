@@ -10,6 +10,7 @@ from .sublime_input_quickpanel import QuickPanelFromInputCommand
 import traceback
 from .settings_validator import ValidatedSettings
 from .sublime_helper import temporary_status_message
+from datetime import datetime
 
 change_counters = {}
 xml_roots = {}
@@ -469,14 +470,9 @@ def register_xpath_extensions():
         print_value = nodes
         if isinstance(nodes, list):
             if len(nodes) > 0 and isinstance(nodes[0], etree._Element):
-                paths = getExactXPathOfNodes(nodes)
-                print_value = paths
+                print_value = getExactXPathOfNodes(nodes)
         
-        if title is None:
-            title = ''
-        else:
-            title = title + ':'
-        print('XPath:', title, 'context_node', getExactXPathOfNodes([context.context_node])[0], 'eval_context', context.eval_context, 'values', print_value)
+        print('XPath: Print function executed at', datetime.now(), 'with title:', title, 'context_node:', getExactXPathOfNodes([context.context_node])[0], 'values:', print_value)
         return nodes
     
     ns['upper-case'] = lambda context, nodes: applyTransformFuncToTextForItems(nodes, str.upper)
@@ -753,7 +749,7 @@ def get_context_nodes_from_cursors(view):
     if len(invalid_trees) > 0:
         invalid_trees = [region_scope for region_scope in invalid_trees if view.match_selector(region_scope.begin(), 'text.html - text.html.markdown')]
         if len(invalid_trees) > 0:
-            print('XPath: Asking about cleaning HTML for view', 'id', view.id(), 'file_name', view.file_name(), 'regions', invalid_trees)
+            print('XPath:', datetime.now(), 'Asking about cleaning HTML for view', 'id', view.id(), 'file_name', view.file_name(), 'regions', invalid_trees)
             if sublime.ok_cancel_dialog('XPath: The HTML is not well formed, and cannot be parsed by the XML parser. Would you like it to be cleaned?', 'Yes'):
                 view.run_command('clean_tag_soup', { 'regions': [(region.begin(), region.end()) for region in invalid_trees] })
                 roots = ensureTreeCacheIsCurrent(view)
@@ -789,7 +785,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         for root in context_nodes:
             tree_count += 1
             
-            print('XPath: context nodes: ', getExactXPathOfNodes(context_nodes[root]))
+            print('XPath:', datetime.now(), 'context nodes: ', getExactXPathOfNodes(context_nodes[root]))
         
         if tree_count == 1: # if there is exactly one xml tree
             tree = next(iter(context_nodes.keys())) # get the tree
@@ -863,7 +859,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
             except etree.XPathError as e:
                 last_char = query.rstrip()[-1]
                 if not last_char in ('/', ':', '@', '[', '(', ','): # log exception to console only if might be useful
-                    print('XPath: exception evaluating results for "' + query + '": ' + repr(e))
+                    print('XPath:', datetime.now(), 'exception evaluating results for "' + query + '": ' + repr(e))
                 #traceback.print_tb(e.__traceback__)
                 status_text = e.__class__.__name__ + ': ' + str(e)
             
@@ -995,7 +991,7 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
             prev_chars.append(prev_char)
     
     if len(positions) == 0:
-        return None # no locations suitable for suggestions
+        return completions # no locations suitable for suggestions
     
     include_generics = False
     include_xpath = False
@@ -1032,7 +1028,7 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
                 start_index = len(subqueries) - relevant_queries - 1
                 subqueries = subqueries[start_index:]
                 
-                #print('XPath: completion context queries:', subqueries[0:-1], 'completion query:', exec_query, 'prefix:', prefix)
+                #print('XPath:', datetime.now(), 'completion context queries:', subqueries[0:-1], 'completion query:', exec_query, 'prefix:', prefix)
                 
                 # TODO: check all trees, not just the first one
                 tree = list(contexts.keys())[0]
@@ -1053,7 +1049,7 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
                             # TODO: if result is not a node, break out as we can't offer any useful suggestions (currently we just get an exception: Non-Element values not supported at this point - got 'example string') when it tries $expression_contexts/*
                         except etree.XPathError as e: # xpath query invalid, just show static contexts
                             completion_contexts = None
-                            print('XPath: exception obtaining completions for subquery "' + query + '": ' + repr(e))
+                            print('XPath:', datetime.now(), 'exception obtaining completions for subquery "' + query + '": ' + repr(e))
                             break
                 
                 if completion_contexts is not None:

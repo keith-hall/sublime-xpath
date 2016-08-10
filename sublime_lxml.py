@@ -7,25 +7,25 @@ RE_TAG_NAME_END_POS = re.compile(r'[>\s/]')
 RE_TAG_ATTRIBUTES = re.compile(r'\s+((\w+(?::\w+)?)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'))')
 
 # TODO: consider subclassing etree.ElementBase and adding as methods to that
-def getNodeTagRegion(view, node, position_type):
-    """Given a view, a node and a position type (open or close), return the region that relates to the node's position."""
+def getNodeTagRegion(node, position_type):
+    """Given a node and a position type (open or close), return the region that relates to the node's position."""
     return sublime.Region(*getNodeTagRange(node, position_type))
 
-def getNodePosition(view, node):
-    """Given a view and a node, return the regions that represent the positions of the open and close tags."""
-    open_pos = getNodeTagRegion(view, node, 'open')
-    close_pos = getNodeTagRegion(view, node, 'close')
+def getNodePosition(node):
+    """Given a node, return the regions that represent the positions of the open and close tags."""
+    open_pos = getNodeTagRegion(node, 'open')
+    close_pos = getNodeTagRegion(node, 'close')
     
     return (open_pos, close_pos)
 
-def getNodePositions(view, node):
+def getNodePositions(node):
     """Generator for distinct positions within this node."""
-    open_pos, close_pos = getNodePosition(view, node)
+    open_pos, close_pos = getNodePosition(node)
     
     pos = open_pos.begin()
     
     for child in node.iterchildren():
-        child_open_pos, child_close_pos = getNodePosition(view, child)
+        child_open_pos, child_close_pos = getNodePosition(child)
         yield (node, pos, child_open_pos.begin(), True)
         pos = child_close_pos.end()
         yield (child, child_open_pos.begin(), pos, len(child) == 0)
@@ -62,7 +62,7 @@ def getNodesAtPositions(view, roots, positions):
     
     def getMatches(node, next_match_index, max_index, final_matches):
         """Check the node and it's children for all matches within the specified range."""
-        spans = getNodePositions(view, node)
+        spans = getNodePositions(node)
         
         found_match_at_last_expected_position_in_node = False
         for span_node, pos_start, pos_end, is_final in spans:
@@ -87,7 +87,7 @@ def getNodesAtPositions(view, roots, positions):
         if root is not None:
             last_match_index = len(positions) - 1
             
-            open_pos, close_pos = getNodePosition(view, root)
+            open_pos, close_pos = getNodePosition(root)
             root_matches, start_match_index, last_match_index = matchSpan(open_pos.cover(close_pos), start_match_index, last_match_index, True)
             get_matches_in_tree = len(root_matches) > 0 # determine if it is worth checking this tree
                 
@@ -111,6 +111,11 @@ def get_nodes_from_document(nodes):
         else:
             continue # unsupported type
         
+        try:
+            getNodeTagRegion(element, 'open')
+        except AttributeError: # sometimes it will fail, for example with the result from a function like our custom print function - lxml converts the nodes in the list to plain Element nodes, not our custom class
+            continue
+        
         yield node
 
 def get_regions_of_nodes(view, nodes, element_position_type, attribute_position_type):
@@ -133,8 +138,8 @@ def get_regions_of_nodes(view, nodes, element_position_type, attribute_position_
             is_tail = node.is_tail
             node = node.getparent() # get the parent
         
-        open_pos = getNodeTagRegion(view, node, 'open')
-        close_pos = getNodeTagRegion(view, node, 'close')
+        open_pos = getNodeTagRegion(node, 'open')
+        close_pos = getNodeTagRegion(node, 'close')
         
         if is_text or is_tail:
             text_begin_pos = None
@@ -146,12 +151,12 @@ def get_regions_of_nodes(view, nodes, element_position_type, attribute_position_
                 next_node = node.iterchildren()
             elif is_tail:
                 text_begin_pos = close_pos.end()
-                text_end_pos = getNodeTagRegion(view, node.getparent(), 'close').begin()
+                text_end_pos = getNodeTagRegion(node.getparent(), 'close').begin()
                 next_node = node.itersiblings()
             
             next_node = next(next_node, None)
             if next_node is not None:
-                text_end_pos = getNodeTagRegion(view, next_node, 'open').begin()
+                text_end_pos = getNodeTagRegion(next_node, 'open').begin()
             yield sublime.Region(text_begin_pos, text_end_pos)
         elif isinstance(node, etree.CommentBase):
             yield open_pos
@@ -231,7 +236,7 @@ def move_cursors_to_nodes(view, nodes, element_position_type, attribute_position
 
 def getElementXMLPreview(view, node, maxlen):
     """Generate the xml string for the given node, up to the specified number of characters."""
-    open_pos, close_pos = getNodePosition(view, node)
+    open_pos, close_pos = getNodePosition(node)
     preview = view.substr(sublime.Region(open_pos.begin(), close_pos.end()))
     return collapseWhitespace(preview, maxlen)
 
