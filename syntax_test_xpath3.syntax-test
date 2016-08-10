@@ -1,67 +1,68 @@
 # SYNTAX TEST "xpath.sublime-syntax"
  .1 *2**
-#^^ constant.numeric.xpath
-#   ^ keyword.operator.xpath
-#    ^ constant.numeric.xpath
-#     ^ keyword.operator.xpath
-#      ^ variable.parameter.xpath
+#^^ constant.numeric
+#   ^ keyword.operator
+#    ^ constant.numeric
+#     ^ keyword.operator
+#      ^ variable.parameter
 +
 5mod2+
-# <- constant.numeric.xpath
-#^^^ keyword.operator.word.xpath
-#   ^ constant.numeric.xpath
+# <- constant.numeric
+#^^^ keyword.operator.word
+#   ^ constant.numeric
 
 /and/ *
-#^^^ entity.name.tag.localname.xpath - keyword
-#     ^ variable.parameter.xpath
+#^^^ entity.name.tag.localname - keyword
+#     ^ variable.parameter
 
 / for/../hello.world/ ns :foobar
-# ^^^ entity.name.tag.localname.xpath
-#     ^^ variable.parameter.xpath
-#        ^^^^^^^^^^^ entity.name.tag.localname.xpath - keyword - variable
+# ^^^ entity.name.tag.localname
+#     ^^ variable.parameter
+#        ^^^^^^^^^^^ entity.name.tag.localname - keyword - variable
 #                     ^^^^^^^^^^ entity.name.tag
-#                     ^^ entity.name.tag.namespace.xpath
-#                        ^ punctuation.separator.namespace.xpath
-#                         ^^^^^^ entity.name.tag.localname.xpath
+#                     ^^ entity.name.tag.namespace
+#                        ^ punctuation.separator.namespace
+#                         ^^^^^^ entity.name.tag.localname
 
 //example[1]/*[starts-with(local-name(), "hello") and./text()and"hello[world][1]"+*
-# ^^^^^^^ entity.name.tag.localname.xpath
-#        ^^^ meta.predicate.xpath
-#        ^ punctuation.definition.predicate.begin.xpath
-#         ^ constant.numeric.xpath
-#          ^ punctuation.definition.predicate.end.xpath
-#            ^ variable.parameter.xpath
-#             ^ punctuation.definition.predicate.begin.xpath
-#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.predicate.xpath
-#              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call.xpath
-#              ^^^^^^^^^^^ support.function.localname.xpath
-#                         ^ punctuation.definition.arguments.subexpression.begin.xpath
-#                          ^^^^^^^^^^^^ meta.function-call.xpath meta.function-call.xpath
-#                          ^^^^^^^^^^ support.function.localname.xpath
-#                                    ^ punctuation.definition.arguments.subexpression.begin.xpath
-#                                     ^ punctuation.definition.arguments.subexpression.end.xpath
-#                                      ^ punctuation.separator.arguments.xpath
-#                                        ^^^^^^^ string.quoted.double.xpath
-#                                               ^ punctuation.definition.arguments.subexpression.end.xpath
-#                                                ^ - meta.function-call.xpath
-#                                                 ^^^ keyword.operator.word.xpath
-#                                                    ^ variable.parameter.xpath
-#                                                     ^ punctuation.separator.location_step.xpath
-#                                                      ^^^^^^ storage.type.node_type.xpath
-#                                                            ^^^ keyword.operator.word.xpath
-#                                                               ^^^^^^^^^^^^^^^^^ string.quoted.double.xpath - constant - entity.tag - variable
-#                                                                                ^ keyword.operator.xpath
-#                                                                                 ^ variable.parameter.xpath
+# ^^^^^^^ entity.name.tag.localname
+#        ^^^ meta.item-access
+#        ^ punctuation.section.brackets.begin
+#         ^ constant.numeric
+#          ^ punctuation.section.brackets.end
+#            ^ variable.parameter
+#             ^ punctuation.section.brackets.begin
+#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.item-access
+#              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call
+#              ^^^^^^^^^^^ support.function.localname
+#                         ^ punctuation.section.arguments.begin
+#                          ^^^^^^^^^^^^ meta.function-call meta.function-call
+#                          ^^^^^^^^^^ support.function.localname
+#                                    ^ punctuation.section.arguments.begin
+#                                     ^ punctuation.section.arguments.end
+#                                      ^ punctuation.separator.parameters
+#                                        ^^^^^^^ string.quoted.double
+#                                               ^ punctuation.section.arguments.end
+#                                                ^ - meta.function-call
+#                                                 ^^^ keyword.operator.word
+#                                                    ^ variable.parameter
+#                                                     ^ punctuation.separator.location-step
+#                                                      ^^^^^^ storage.type.node-type
+#                                                            ^^^ keyword.operator.word
+#                                                               ^^^^^^^^^^^^^^^^^ string.quoted.double - constant - entity.tag - variable
+#                                                                                ^ keyword.operator
+#                                                                                 ^ variable.parameter
 
-/*[ns :func(1234)]
-#  ^^^^^^^^^^^^^^ meta.function-call.xpath
-# ^ - meta.function-call.xpath
-#                ^ - meta.function-call.xpath
+/*[ns :func(1234)][3]
+#  ^^^^^^^^^^^^^^ meta.function-call
+# ^ - meta.function-call
+#                ^ - meta.function-call
 #  ^^^^^^^^ support.function
-#  ^^ support.function.namespace.xpath
-#     ^ support.function.xpath punctuation.separator.namespace.xpath
-#      ^^^^ support.function.localname.xpath
+#  ^^ support.function.namespace
+#     ^ support.function punctuation.separator.namespace
+#      ^^^^ support.function.localname
 #          ^ - support.function
+#                ^^^ meta.item-access
 
 ///5*+2'hello'
-# ^^^^^^^^^^^^ meta.predicate.xpath invalid.illegal.unexpected_token.xpath
+# ^^^^^^^^^^^^ invalid.illegal.unexpected-token

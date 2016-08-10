@@ -1,38 +1,38 @@
 # SYNTAX TEST "xpath.sublime-syntax"
 /element1/ns:element2/child::*[position() > 1  and substring-after(., 'hello world') = "test(123)"]/text()
-# <- punctuation.separator.location_step.xpath - variable.parameter.xpath
-#^^^^^^^^ entity.name.tag.localname.xpath - punctuation.separator.location_step.xpath
-#        ^ punctuation.separator.location_step.xpath
-#         ^^ entity.name.tag.namespace.xpath
-#           ^ entity.name.tag.xpath punctuation.separator.namespace.xpath
-#            ^^^^^^^^ entity.name.tag.localname.xpath
-#                     ^^^^^^^ constant.language.axis_name.xpath
-#                            ^ variable.parameter.xpath
-#                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.predicate.xpath
-#                             ^ punctuation.definition.predicate.begin.xpath
-#                              ^^^^^^^^^^ meta.function-call.xpath
-#                              ^^^^^^^^ support.function.localname.xpath
-#                                      ^ punctuation.definition.arguments.subexpression.begin.xpath
-#                                       ^ punctuation.definition.arguments.subexpression.end.xpath
-#                                         ^ keyword.operator.xpath
-#                                           ^ constant.numeric.xpath
-#                                              ^^^ keyword.operator.word.xpath
-#                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call.xpath
-#                                                  ^^^^^^^^^^^^^^^ support.function.localname.xpath
-#                                                                  ^ variable.parameter.xpath
-#                                                                   ^ punctuation.separator.arguments.xpath
-#                                                                     ^^^^^^^^^^^^^ string.quoted.single.xpath
-#                                                                     ^ punctuation.definition.string.begin.xpath
-#                                                                                 ^ punctuation.definition.string.end.xpath
-#                                                                                  ^ punctuation.definition.arguments.subexpression.end.xpath
-#                                                                                    ^ keyword.operator.xpath
-#                                                                                      ^^^^^^^^^^^ string.quoted.double.xpath - meta.function-call.xpath - punctuation.definition.arguments
-#                                                                                      ^ punctuation.definition.string.begin.xpath
-#                                                                                                ^ punctuation.definition.string.end.xpath
-#                                                                                                 ^ punctuation.definition.predicate.end.xpath
-#                                                                                                  ^ punctuation.separator.location_step.xpath
-#                                                                                                   ^^^^^^ storage.type.node_type.xpath - meta.function-call.xpath
+# <- punctuation.separator.location-step - variable.parameter
+#^^^^^^^^ entity.name.tag.localname - punctuation.separator.location-step
+#        ^ punctuation.separator.location-step
+#         ^^ entity.name.tag.namespace
+#           ^ entity.name.tag punctuation.separator.namespace
+#            ^^^^^^^^ entity.name.tag.localname
+#                     ^^^^^^^ constant.language.axis-name
+#                            ^ variable.parameter
+#                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.item-access
+#                             ^ punctuation.section.brackets.begin
+#                              ^^^^^^^^^^ meta.function-call
+#                              ^^^^^^^^ support.function.localname
+#                                      ^ punctuation.section.arguments.begin
+#                                       ^ punctuation.section.arguments.end
+#                                         ^ keyword.operator
+#                                           ^ constant.numeric
+#                                              ^^^ keyword.operator.word
+#                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call
+#                                                  ^^^^^^^^^^^^^^^ support.function.localname
+#                                                                  ^ variable.parameter
+#                                                                   ^ punctuation.separator.parameters
+#                                                                     ^^^^^^^^^^^^^ string.quoted.single
+#                                                                     ^ punctuation.definition.string.begin
+#                                                                                 ^ punctuation.definition.string.end
+#                                                                                  ^ punctuation.section.arguments.end
+#                                                                                    ^ keyword.operator
+#                                                                                      ^^^^^^^^^^^ string.quoted.double - meta.function-call - punctuation.definition.arguments
+#                                                                                      ^ punctuation.definition.string.begin
+#                                                                                                ^ punctuation.definition.string.end
+#                                                                                                 ^ punctuation.section.brackets.end
+#                                                                                                  ^ punctuation.separator.location-step
+#                                                                                                   ^^^^^^ storage.type.node-type - meta.function-call
 #                                                                                                       ^^ - punctuation.definition.arguments
 
  )]
-#^ invalid.illegal.stray-bracket-end.xpath
+#^ invalid.illegal.stray-bracket-end

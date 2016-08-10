@@ -1,49 +1,48 @@
 # SYNTAX TEST "xpath.sublime-syntax"
  (/hello/descendant::world)[1]
-#^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.block.query.xpath
-#<- - meta.block.query.xpath
-#                          ^ - meta.block.query.xpath
-#^ punctuation.definition.subexpression.begin.xpath
-# ^ punctuation.separator.location_step.xpath
-#  ^^^^^ entity.name.tag.localname.xpath
-#        ^^^^^^^^^^^^ constant.language.axis_name.xpath
-#                    ^^^^^ entity.name.tag.localname.xpath
-#                         ^ punctuation.definition.subexpression.end.xpath
-#                          ^^^ meta.predicate.xpath
-#                          ^ punctuation.definition.predicate.begin.xpath
-#                           ^ constant.numeric.xpath
-#                            ^ punctuation.definition.predicate.end.xpath
+#^^^^^^^^^^^^^^^^^^^^^^^^^^ meta.group
+#<- - meta.group
+#                          ^ - meta.group
+#^ punctuation.section.group.begin
+# ^ punctuation.separator.location-step
+#  ^^^^^ entity.name.tag.localname
+#        ^^^^^^^^^^^^ constant.language.axis-name
+#                    ^^^^^ entity.name.tag.localname
+#                         ^ punctuation.section.group.end
+#                          ^ meta.item-access.array punctuation.section.brackets.begin
+#                           ^ meta.item-access.arguments.array-index constant.numeric
+#                            ^ meta.item-access.array punctuation.section.brackets.end
 
 / @ hello/ text () / ancestor :: test :*
 # ^^^^^^^ entity.other.attribute-name
-# ^ punctuation.definition.attribute.xpath
-#   ^^^^^ entity.other.attribute-name.localname.xpath
-#          ^^^^ storage.type.node_type.xpath
-#               ^^ storage.type.node_type.xpath
-#                    ^^^^^^^^ constant.language.axis_name.xpath
-#                             ^^ constant.language.axis_name.xpath
-#                                ^^^^ entity.name.tag.namespace.xpath
-#                                    ^^ entity.name.tag.xpath
-#                                     ^ punctuation.separator.namespace.xpath
-#                                      ^ variable.parameter.xpath
+# ^ punctuation.definition.attribute
+#   ^^^^^ entity.other.attribute-name.localname
+#          ^^^^ storage.type.node-type
+#               ^^ storage.type.node-type
+#                    ^^^^^^^^ constant.language.axis-name
+#                             ^^ constant.language.axis-name
+#                                ^^^^ entity.name.tag.namespace
+#                                    ^^ entity.name.tag
+#                                     ^ punctuation.separator.namespace
+#                                      ^ variable.parameter
 
 / @namespace :foobar
 # ^^^^^^^^^^^^^^^^^^ entity.other.attribute-name
-#  ^^^^^^^^^ entity.other.attribute-name.namespace.xpath
-#            ^ punctuation.separator.namespace.xpath
-#             ^^^^^^ entity.other.attribute-name.localname.xpath
+#  ^^^^^^^^^ entity.other.attribute-name.namespace
+#            ^ punctuation.separator.namespace
+#             ^^^^^^ entity.other.attribute-name.localname
 
  -3.div--(-.2)
-# ^^ constant.numeric.xpath
-#   ^^^ keyword.operator.word.xpath
-#         ^^^ constant.numeric.xpath
+# ^^ constant.numeric
+#   ^^^ keyword.operator.word
+#         ^^^ constant.numeric
 /*[.="line spanning
 multiple lines"]
-#^^^^^^^^^^^^^^^ meta.predicate.xpath
-#^^^^^^^^^^^^^^ string.quoted.double.xpath
-#             ^ punctuation.definition.string.end.xpath
-#              ^ punctuation.definition.predicate.end.xpath - string
-#                ^ - meta.predicate.xpath
+#^^^^^^^^^^^^^^^ meta.item-access
+#               ^ - meta.item-access
+#^^^^^^^^^^^^^^ string.quoted.double
+#             ^ punctuation.definition.string.end
+#              ^ punctuation.section.brackets.end - string
 /*[following::(bar)]
-#  ^^^^^^^^^^^ constant.language.axis_name.xpath
-#             ^^^^^ invalid.illegal.unexpected_token.xpath
+#  ^^^^^^^^^^^ constant.language.axis-name
+#             ^^^^^ invalid.illegal.unexpected-token

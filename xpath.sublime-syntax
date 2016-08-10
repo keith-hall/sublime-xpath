@@ -10,7 +10,7 @@ variables:
 contexts:
   main:
     - match: '#.*$'
-      scope: syntax_test.marker # needed to get syntax tests working properly, otherwise it treats the syntax test definition line as an xpath... https://github.com/SublimeTextIssues/Core/issues/1152
+      scope: syntax-test.marker.xpath # needed to get syntax tests working properly, otherwise it treats the syntax test definition line as an xpath... https://github.com/SublimeTextIssues/Core/issues/1152
     - match: '\]|\)'
       scope: invalid.illegal.stray-bracket-end.xpath
     - match: ''
@@ -19,7 +19,7 @@ contexts:
   base_without_pop:
     - include: location_step
     - match: '-*\('
-      scope: punctuation.definition.subexpression.begin.xpath
+      scope: punctuation.section.group.begin.xpath
       set: [inside_subexpression, base_disallow_pop] # don't allow an opening parenthesis followed immediately by a closing parenthesis
     - match: '"'
       scope: punctuation.definition.string.begin.xpath
@@ -48,9 +48,9 @@ contexts:
       pop: true
 
   inside_subexpression:
-    - meta_scope: meta.block.query.xpath
+    - meta_scope: meta.group.xpath
     - match: '\)'
-      scope: punctuation.definition.subexpression.end.xpath
+      scope: punctuation.section.group.end.xpath
       set: operator_or_predicate_or_location_step
 
   base:
@@ -60,7 +60,7 @@ contexts:
 
   location_step:
     - match: '/{1,2}'
-      scope: punctuation.separator.location_step.xpath
+      scope: punctuation.separator.location-step.xpath
       set: location_test_or_invalid
 
   axis_step:
@@ -71,7 +71,7 @@ contexts:
   base_disallow_pop:
     - include: base_without_pop
     - match: '[,\]\)]'
-      scope: invalid.illegal.unexpected_token.xpath
+      scope: invalid.illegal.unexpected-token.xpath
 
   pop_me:
     - match: '(?=[,\]\)])'
@@ -88,8 +88,13 @@ contexts:
     - include: unexpected_token
 
   operator_or_predicate:
+    - match: '(\[)(\d+)(\])'
+      captures:
+        1: meta.item-access.array.xpath punctuation.section.brackets.begin.xpath
+        2: meta.item-access.arguments.array-index.xpath constant.numeric.xpath # Number
+        3: meta.item-access.array.xpath punctuation.section.brackets.end.xpath
     - match: '\['
-      scope: punctuation.definition.predicate.begin.xpath
+      scope: meta.item-access.array.xpath punctuation.section.brackets.begin.xpath
       set: [inside_predicate, base_disallow_pop]
     - include: operator
 
@@ -102,15 +107,15 @@ contexts:
     - include: operator
 
   inside_predicate:
-    - meta_scope: meta.predicate.xpath
+    - meta_content_scope: meta.item-access.arguments.xpath
     - match: '\]'
-      scope: punctuation.definition.predicate.end.xpath
+      scope: meta.item-access.array.xpath punctuation.section.brackets.end.xpath
       set: operator_or_predicate_or_location_step
     - include: unexpected_token
 
   node_type:
     - match: '(comment|text|processing-instruction|node)\s*\(\s*\)'
-      scope: storage.type.node_type.xpath # NodeType
+      scope: storage.type.node-type.xpath # NodeType
       set: operator_or_predicate_or_location_step
 
   name_test:
@@ -144,7 +149,7 @@ contexts:
       set: operator_or_predicate_or_location_step
     - match: '((?:ancestor(?:-or-self)?|attribute|child|descendant(?:-or-self)?|following(?:-sibling)?|namespace|parent|preceding(?:-sibling)?|self)\s*::)\s*'
       captures:
-        1: constant.language.axis_name.xpath # AxisName
+        1: constant.language.axis-name.xpath # AxisName
       set: node_test_or_invalid
     - include: node_type
     - match: '{{Prefix}}({{QName}})\s*(\()'
@@ -153,7 +158,7 @@ contexts:
         2: support.function.xpath whitespace.xpath
         3: support.function.xpath punctuation.separator.namespace.xpath
         4: support.function.localname.xpath # NameTest 
-        5: punctuation.definition.arguments.subexpression.begin.xpath
+        5: punctuation.section.arguments.begin.xpath
       set: [inside_function, base]
     - include: name_test
     - include: axis_step
@@ -164,15 +169,16 @@ contexts:
 
   inside_function:
     - meta_scope: meta.function-call.xpath
+    - meta_content_scope: meta.function-call.arguments.xpath
     - match: '\)'
-      scope: punctuation.definition.arguments.subexpression.end.xpath
+      scope: punctuation.section.arguments.end.xpath
       set: operator_or_predicate_or_location_step
     - match: ','
-      scope: punctuation.separator.arguments.xpath
+      scope: punctuation.separator.parameters.xpath
       push: base
 
   unexpected_token:
     - match: '[)\]]'
       scope: invalid.illegal.stray-bracket-end.xpath
     - match: '\S+'
-      scope: invalid.illegal.unexpected_token.xpath
+      scope: invalid.illegal.unexpected-token.xpath
