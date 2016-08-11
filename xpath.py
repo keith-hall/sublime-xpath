@@ -985,6 +985,11 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
         if view.match_selector(location, 'string'): # if in a string, nothing to suggest
             continue
         pos = locations[0] - len(prefix)
+        
+        # don't show completions if the previous character is invalid
+        if view.match_selector(pos - 1, 'invalid'):
+            continue
+        
         positions.append(pos)
         prev_char = view.substr(pos - 1)
         if prev_char not in prev_chars:
