@@ -936,7 +936,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
             flags = 0
         return (completions_for_xpath_query(self.input_panel, prefix, locations, self.contexts[1], self.contexts[2], settings.get('variables'), self.arguments['intelligent_auto_complete'], settings.get('autocomplete_self_axis_with_star')), flags)
     
-    def on_completion_committed(self):
+    def show_autocompletions_if_previous_char_is_a_trigger(self):
         # show the auto complete popup again if the item that was autocompleted ended in a character that is an auto completion trigger
         for cursor in self.input_panel.sel():
             prev_char = self.input_panel.substr(cursor.begin() - 1)
@@ -945,6 +945,9 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
         
         self.input_panel.run_command('auto_complete')
         self.input_panel.window().focus_view(self.input_panel)
+    
+    def on_completion_committed(self):
+        self.show_autocompletions_if_previous_char_is_a_trigger()
     
     def is_enabled(self, **args):
         return isCursorInsideSGML(self.view)
@@ -1103,4 +1106,13 @@ class XpathCharacter(sublime_plugin.TextCommand):
         if kwargs['commit_completion']:
             self.view.run_command('commit_completion')
         self.view.run_command('insert', { 'characters': kwargs['character'] })
-        self.view.run_command('hide_auto_complete')
+        if not kwargs['commit_completion']:
+            self.view.run_command('hide_auto_complete')
+            #self.show_autocompletions_if_previous_char_is_a_trigger()
+            
+            sublime.set_timeout_async(lambda: self.view.run_command('auto_complete'), 1)
+            self.view.window().focus_view(self.view)
+
+# https://forum.sublimetext.com/t/stop-auto-complete-from-committing-on-space/15104/2
+#view.substr(sublime.Region(view.find_by_class(view.sel()[0].begin(), False, sublime.CLASS_WORD_START), view.sel()[0].begin()))
+#last_command context
