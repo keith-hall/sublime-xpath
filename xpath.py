@@ -943,7 +943,7 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
             if prev_char not in self.arguments['auto_completion_triggers']:
                 return
         
-        self.input_panel.run_command('auto_complete')
+        self.input_panel.run_command('auto_complete', { 'disable_auto_insert': True, 'api_completions_only': False, 'next_completion_if_showing': False, 'auto_complete_commit_on_tab': True, }) # https://forum.sublimetext.com/t/stop-auto-complete-from-committing-on-space/15104/2
         self.input_panel.window().focus_view(self.input_panel)
     
     def on_completion_committed(self):
@@ -1100,19 +1100,3 @@ def completions_for_xpath_query(view, prefix, locations, contexts, namespaces, v
             completions += [completion for completion in generics if completion[0].startswith(last_location_step)]
         
     return completions
-
-class XpathCharacter(sublime_plugin.TextCommand):
-    def run(self, view, **kwargs):
-        if kwargs['commit_completion']:
-            self.view.run_command('commit_completion')
-        self.view.run_command('insert', { 'characters': kwargs['character'] })
-        if not kwargs['commit_completion']:
-            self.view.run_command('hide_auto_complete')
-            #self.show_autocompletions_if_previous_char_is_a_trigger()
-            
-            sublime.set_timeout_async(lambda: self.view.run_command('auto_complete'), 1)
-            self.view.window().focus_view(self.view)
-
-# https://forum.sublimetext.com/t/stop-auto-complete-from-committing-on-space/15104/2
-#view.substr(sublime.Region(view.find_by_class(view.sel()[0].begin(), False, sublime.CLASS_WORD_START), view.sel()[0].begin()))
-#last_command context
