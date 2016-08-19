@@ -447,6 +447,11 @@ def register_xpath_extensions():
     def applyFuncToTextForItem(item, func):
         if isinstance(item, etree._Element):
             return func(item.xpath('string(.)'))
+        elif isinstance(item, list):
+            if len(item) > 0:
+                return applyFuncToTextForItem(item[0], func)
+            else:
+                return ''
         else:
             return func(str(item))
     
