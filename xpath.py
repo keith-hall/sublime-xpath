@@ -921,6 +921,8 @@ class QueryXpathCommand(QuickPanelFromInputCommand): # example usage from python
             #self.view.window().focus_view(self.view) # focus the view to try getting the cursor positions to update while the quick panel is open
             #if self.input_panel is not None:
             #    self.input_panel.window().focus_view(self.input_panel)
+            # TODO: if selected item is not navigatable, print the value to the console as though it was wrapped in the print function, to allow copy and pasting of the result?
+            #       - maybe only on final selection, i.e. when the quick panel will close afterwards?
     
     def commit_input(self):
         self.previous_input = self.current_value
