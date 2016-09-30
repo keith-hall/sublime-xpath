@@ -65,8 +65,11 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                 test_xpath_completion('//*[number(text())*', ['//*', ''])
             
             def create_test_view():
-                self.view.window().run_command('new_file')
-                view = self.view.window().active_view()
+                window = self.view.window()
+                if window is None:
+                    window = sublime.active_window()
+                window.run_command('new_file')
+                view = window.active_view()
                 
                 view.assign_syntax('xml.sublime-syntax')
                 #view.set_read_only(True)
@@ -115,10 +118,18 @@ class RunXpathTestsCommand(sublime_plugin.TextCommand): # sublime.active_window(
                     goto_xpath('/test/default1:hello/default2:world', 'close', None, [(1178, 1183)])
                     goto_xpath('/test/default1:hello/default2:world', 'content', None, [(1010, 1176)])
                     goto_xpath('/test/default1:hello/default2:world', 'open_attributes', None, [(992, 1009)])
+                    goto_xpath('/test/default1:hello/default2:world', 'after_close_tag', None, [(1184, 1184)])
+                    goto_xpath('/test/default1:hello/default2:world', 'before_close_tag', None, [(1176, 1176)])
+                    goto_xpath('/test/default1:hello/default2:world', 'after_open_tag', None, [(1010, 1010)])
+                    goto_xpath('/test/default1:hello/default2:world', 'before_open_tag', None, [(986, 986)])
                     goto_xpath('/test/default1:hello/default2:world/default2:example', 'content', None, [(1096, 1096)])
                     goto_xpath('/test/default1:hello/default2:world/default2:example', 'open_attributes', None, [(1093, 1094)])
                     goto_xpath('/test/default1:hello/default2:world/default2:example', 'names', None, [(1086, 1093)])
                     goto_xpath('/test/default1:hello/default2:world/default2:example', 'close', None, [(1086, 1093)])
+                    goto_xpath('/test/default1:hello/default2:world/default2:example', 'after_close_tag', None, [(1096, 1096)])
+                    goto_xpath('/test/default1:hello/default2:world/default2:example', 'before_close_tag', None, [(1085, 1085)])
+                    goto_xpath('/test/default1:hello/default2:world/default2:example', 'after_open_tag', None, [(1096, 1096)])
+                    goto_xpath('/test/default1:hello/default2:world/default2:example', 'before_open_tag', None, [(1085, 1085)])
                     goto_xpath('//hij', 'open_attributes', None, [(2805, 2805)])
                     
                     goto_xpath('(//text())[1]', None, None, [(29, 32)])

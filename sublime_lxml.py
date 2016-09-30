@@ -191,6 +191,14 @@ def get_regions_of_nodes(view, nodes, element_position_type, attribute_position_
                     yield sublime.Region(open_pos.end(), close_pos.begin())
             elif element_position_type == 'entire':
                 yield sublime.Region(open_pos.begin(), close_pos.end())
+            elif element_position_type == 'before_open_tag':
+                yield sublime.Region(open_pos.begin(), open_pos.begin())
+            elif element_position_type == 'before_close_tag':
+                yield sublime.Region(close_pos.begin(), close_pos.begin())
+            elif element_position_type == 'after_open_tag':
+                yield sublime.Region(open_pos.end(), open_pos.end())
+            elif element_position_type == 'after_close_tag':
+                yield sublime.Region(close_pos.end(), close_pos.end())
         elif attribute_position_type != 'none':
             # position type 'name' <element |attr1|="test"></element> "Goto attribute name in open tag"
             # position type 'content' <element attr1="|test|"></element> "Goto attribute value in open tag"

@@ -1,6 +1,6 @@
 [
 	{ "key": "goto_element",
-	  "allowed_values": ["open", "close", "names", "open_attributes", "content", "entire"],
+	  "allowed_values": ["open", "close", "names", "open_attributes", "content", "entire", "before_open_tag", "before_close_tag", "after_open_tag", "after_close_tag"],
       "type": "str"
 	},
 	{ "key": "goto_attribute",

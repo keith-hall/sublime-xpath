@@ -46,6 +46,10 @@ See [default settings](https://github.com/rosshadden/sublime-xpath/blob/master/x
   - `open_attributes` - Select all the attributes in the open tag.
   - `content` - Select the content of the element.
   - `entire` - Select the entire element i.e. it's open tag, contents and close tag.
+  - `before_open_tag` - Put the cursor immediately before the open tag.
+  - `after_open_tag` - Put the cursor immediately after the open tag.
+  - `before_close_tag` - Put the cursor immediately before the close tag.
+  - `after_close_tag` - Put the cursor immediately after the close tag.
   - `none` - Do not move the cursor.
 - `goto_attribute` - when an attribute is selected via an XPath query, which aspect of it the cursor should move to. Possible values are:
   - `name` - Select the name of the attribute.
