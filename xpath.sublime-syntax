@@ -16,11 +16,17 @@ contexts:
     - match: ''
       push: base
 
-  base_without_pop:
+  base_excluding_string:
     - include: location_step
     - match: '-*\('
       scope: punctuation.section.group.begin.xpath
       set: [inside_subexpression, base_disallow_pop] # don't allow an opening parenthesis followed immediately by a closing parenthesis
+    - match: '\$({{QName}})?'
+      scope: variable.other.xpath # VariableReference
+      set: operator_or_predicate_or_location_step
+    - include: location_test
+
+  base_without_pop:
     - match: '"'
       scope: punctuation.definition.string.begin.xpath
       set: [operator, inside_string_double]
@@ -30,10 +36,7 @@ contexts:
     - match: '-*(?:\d+\.\d*|\.?\d+)' # lxml allows '2', '2.', '.5', '2.5' and '---3' for example - '2.' is treated as '2.0'
       scope: constant.numeric.xpath # Number
       set: operator
-    - match: '\$({{QName}})?'
-      scope: variable.other.xpath # VariableReference
-      set: operator_or_predicate_or_location_step
-    - include: location_test
+    - include: base_excluding_string
 
   inside_string_double:
     - meta_scope: string.quoted.double.xpath # Literal
@@ -152,6 +155,11 @@ contexts:
         1: constant.language.axis-name.xpath # AxisName
       set: node_test_or_invalid
     - include: node_type
+    - match: '(tokenize|matches)\s*(\()'
+      captures:
+        1: support.function.localname.xpath # NameTest 
+        2: punctuation.section.arguments.begin.xpath
+      set: [inside_function_regex, pop_at_comma]
     - match: '{{Prefix}}({{QName}})\s*(\()'
       captures:
         1: support.function.namespace.xpath
@@ -166,6 +174,12 @@ contexts:
   location_test_or_invalid:
     - include: location_test
     - include: unexpected_token
+
+  pop_at_comma:
+    - match: ','
+      scope: punctuation.separator.parameters.xpath
+      pop: true
+    - include: base
 
   inside_function:
     - meta_scope: meta.function-call.xpath
@@ -182,3 +196,31 @@ contexts:
       scope: invalid.illegal.stray-bracket-end.xpath
     - match: '\S+'
       scope: invalid.illegal.unexpected-token.xpath
+
+  inside_function_regex:
+    - meta_scope: meta.function-call.xpath
+    - meta_content_scope: meta.function-call.arguments.xpath
+    - match: '\)'
+      scope: punctuation.section.arguments.end.xpath
+      set: operator_or_predicate_or_location_step
+    - match: ','
+      scope: punctuation.separator.parameters.xpath
+      set:
+        - meta_content_scope: meta.function-call.xpath meta.function-call.arguments.xpath
+        - match: "'"
+          scope: punctuation.definition.string.begin.xpath
+          push:
+            - meta_scope: string.quoted.single.xpath
+            - match: "'"
+              scope: punctuation.definition.string.end.xpath
+              set: inside_function
+            - include: scope:source.regexp#base-literal
+        - match: "'"
+          scope: punctuation.definition.string.begin.xpath
+          push:
+            - meta_scope: string.quoted.double.xpath
+            - match: "'"
+              scope: punctuation.definition.string.end.xpath
+              set: inside_function
+            - include: scope:source.regexp#base-literal
+    - include: base_excluding_string

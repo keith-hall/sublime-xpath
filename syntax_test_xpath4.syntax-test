@@ -1,0 +1,26 @@
+# SYNTAX TEST "xpath.sublime-syntax"
+ tokenize('hello world', '\s*', '')
+#^^^^^^^^ meta.function-call.xpath support.function.localname.xpath
+#        ^ punctuation.section.arguments.begin.xpath
+#         ^^^^^^^^^^^^^^^^^^^^^^^^ meta.function-call.arguments.xpath
+#         ^^^^^^^^^^^^^ string.quoted.single.xpath
+#                      ^ punctuation.separator.parameters.xpath
+#                        ^^^^ string.quoted.single.xpath
+#                         ^^ keyword.control.character-class.regexp
+#                           ^ keyword.operator.quantifier.regexp
+#                             ^ - string
+#                                 ^ punctuation.section.arguments.end.xpath
+or
+ tokenize(string(.), '\s*', 'i')
+#^^^^^^^^ meta.function-call.xpath support.function.localname.xpath
+#         ^^^^^^ support.function.localname.xpath
+#                     ^^ keyword.control.character-class.regexp
+#                ^ variable.parameter.xpath
+#                            ^ string
+or 'hello\s*world'
+#        ^^ - keyword
+or matches('hello world', '\w+\s*\w+')
+#  ^^^^^^^ support.function.localname.xpath
+#          ^^^^^^^^^^^^^ string
+#                          ^^ keyword
+#                             ^^ keyword
